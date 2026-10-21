@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hamdhi — Online OpenAPI / Swagger UI</title>
+<style>
+:root{--bg:#0b0f19;--panel:#121826;--surface:#161e30;--border:#23304a;--text:#e8eef7;--muted:#94a3b8;--accent:#38bdf8;--get:#38bdf8;--post:#22c55e;--put:#f59e0b;--del:#ef4444;--patch:#a855f7;--input:#0f172a;--danger:#ef4444;--ok:#22c55e}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+body.dark{--bg:#0b0f19;--panel:#121826;--surface:#161e30;--border:#23304a;--text:#e8eef7;--muted:#94a3b8;--input:#0f172a}
+body.light{--bg:#f1f5f9;--panel:#ffffff;--surface:#f8fafc;--border:#cbd5e1;--text:#0f172a;--muted:#64748b;--input:#ffffff;--get:#0ea5e9;--post:#15803d;--put:#d97706;--del:#dc2626;--patch:#7e22ce}
+body.theme-orange{--bg:#1a0f00;--panel:#2a1600;--surface:#331e00;--border:#4d3300;--text:#ffedd5;--muted:#e2b28a;--accent:#ffb74d;--get:#ffb74d;--post:#ffcc80;--put:#ffb74d;--del:#ff7043;--patch:#ffb74d;--input:#2a1600}
+body.theme-red{--bg:#1a0000;--panel:#2a0000;--surface:#330000;--border:#4d0000;--text:#ffe3e3;--muted:#e2a3a3;--accent:#ef5350;--get:#ef5350;--post:#e57373;--put:#ef5350;--del:#ef5350;--patch:#ef5350;--input:#2a0000}
+body.theme-blue{--bg:#001a2e;--panel:#00223d;--surface:#002a4d;--border:#003d66;--text:#e3f2fd;--muted:#a3c6e2;--accent:#42a5f5;--get:#42a5f5;--post:#64b5f6;--put:#42a5f5;--del:#64b5f6;--patch:#42a5f5;--input:#00223d}
+body.theme-purple{--bg:#1a002e;--panel:#2a003d;--surface:#33004d;--border:#4d0066;--text:#f3e5ff;--muted:#d1a3e2;--accent:#ce93d8;--get:#ce93d8;--post:#e1bee7;--put:#ce93d8;--del:#e1bee7;--patch:#ce93d8;--input:#2a003d}
+body.theme-green{--bg:#001a0f;--panel:#002a16;--surface:#00331e;--border:#004d33;--text:#e8f5e9;--muted:#a3e2b2;--accent:#66bb6a;--get:#66bb6a;--post:#81c784;--put:#66bb6a;--del:#66bb6a;--patch:#66bb6a;--input:#002a16}
+body.theme-pink{--bg:#1e002e;--panel:#2e003d;--surface:#3e004d;--border:#4d0066;--text:#ffe3fc;--muted:#e2a3d6;--accent:#f48fb1;--get:#f48fb1;--post:#f8bbd0;--put:#f48fb1;--del:#f48fb1;--patch:#f48fb1;--input:#2e003d}
+body.theme-matte-dark{--bg:#1e1e1e;--panel:#252525;--surface:#2d2d2d;--border:#3c3c3c;--text:#d4d4d4;--muted:#858585;--accent:#569cd6;--get:#569cd6;--post:#4ec9b0;--put:#ce9178;--del:#f48771;--patch:#c586c0;--input:#252525}
+body.theme-matte-light{--bg:#f0f0f0;--panel:#ffffff;--surface:#f5f5f5;--border:#cccccc;--text:#333333;--muted:#666666;--accent:#007acc;--get:#007acc;--post:#4c9a6d;--put:#c98a00;--del:#c00000;--patch:#8064a2;--input:#ffffff}
+body.theme-matte-gray{--bg:#2b2b2b;--panel:#3a3a3a;--surface:#404040;--border:#4e4e4e;--text:#c0c0c0;--muted:#8a8a8a;--accent:#6ba6d8;--get:#6ba6d8;--post:#8dc08d;--put:#d8a46a;--del:#d86a6a;--patch:#b08ad8;--input:#3a3a3a}
+body.theme-matte-sepia{--bg:#2a2119;--panel:#352a21;--surface:#3d3026;--border:#4c3d32;--text:#e8ddd3;--muted:#b8a494;--accent:#c9a66b;--get:#c9a66b;--post:#8dae8d;--put:#c98c6b;--del:#c97a7a;--patch:#b08ad8;--input:#352a21}
+body.theme-matte-monokai{--bg:#1e1e1e;--panel:#272822;--surface:#2a2a2a;--border:#383830;--text:#f8f8f2;--muted:#75715e;--accent:#66d9ef;--get:#66d9ef;--post:#a6e22e;--put:#fd971f;--del:#f92672;--patch:#ae81ff;--input:#272822}
+body.theme-matte-solarized{--bg:#002b36;--panel:#073642;--surface:#0a4358;--border:#1e4e64;--text:#839496;--muted:#586e75;--accent:#268bd2;--get:#268bd2;--post:#2aa198;--put:#b58900;--del:#dc322f;--patch:#6c71c4;--input:#073642}
+a{color:var(--accent);text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:transparent;color:inherit}
+input,select,textarea{font:inherit;background:var(--input);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
+.kbd{font-size:10px;background:var(--input);border:1px solid var(--border);padding:0 5px;border-radius:3px;color:var(--muted);margin-left:6px}
+.header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.header input[type="url"],.header input[type="text"]{flex:1;min-width:220px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:12px;line-height:1}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#020617;border-color:var(--accent)}
+.btn.primary:hover{background:#7dd3fc}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.small{padding:4px 8px;font-size:11px}
+.btn-exec{margin-left:auto;padding:3px 7px;font-size:11px;opacity:0.6;border:1px solid var(--border);background:var(--surface)}
+.btn-exec:hover{opacity:1;border-color:var(--accent);color:var(--accent)}
+.endpoint:hover .btn-exec{opacity:1}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;border:1px solid}
+.badge.get{background:rgba(56,189,248,.15);color:var(--get);border-color:rgba(56,189,248,.35)}
+.badge.post{background:rgba(34,197,94,.15);color:var(--post);border-color:rgba(34,197,94,.35)}
+.badge.put{background:rgba(245,158,11,.15);color:var(--put);border-color:rgba(245,158,11,.35)}
+.badge.del{background:rgba(239,68,68,.15);color:var(--del);border-color:rgba(239,68,68,.35)}
+.badge.patch{background:rgba(168,85,247,.15);color:var(--patch);border-color:rgba(168,85,247,.35)}
+.badge.req{background:var(--danger);color:#fff;border-color:var(--danger)}
+.badge.opt{background:transparent;color:var(--muted);border-color:var(--border)}
+.deprecated{text-decoration:line-through;color:var(--muted)}
+.main{display:flex;height:calc(100vh - 52px);overflow:hidden}
+.sidebar{width:340px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar header{padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
+.sidebar header h2{font-size:15px;font-weight:700}
+.sidebar header p{font-size:11px;color:var(--muted);margin-top:2px}
+.search{padding:8px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)}
+.search input{width:100%;background:var(--input);padding:6px 10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.1)}
+.tag{padding:3px 10px;border:1px solid var(--border);border-radius:12px;font-size:11px;color:var(--muted);background:var(--surface)}
+.tag.active{background:var(--accent);color:#020617;border-color:var(--accent)}
+.endpoints{flex:1;overflow:auto;padding:6px}
+.endpoint{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid transparent;border-radius:6px;margin-bottom:6px;background:var(--surface);cursor:pointer}
+.endpoint:hover{border-color:var(--border);background:var(--panel)}
+.endpoint.selected{border-color:var(--accent);background:rgba(56,189,248,.1)}
+.endpoint .method{font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;min-width:34px;text-align:center}
+.endpoint.m-get .method{color:var(--get)}
+.endpoint.m-post .method{color:var(--post)}
+.endpoint.m-put .method{color:var(--put)}
+.endpoint.m-delete .method{color:var(--del)}
+.endpoint.m-patch .method{color:var(--patch)}
+.endpoint .path{flex:1;font-size:12.5px;font-weight:600}
+.endpoint .summary{font-size:11.5px;color:var(--muted);margin-left:8px}
+.endpoint.selected{border-color:var(--accent);background:rgba(56,189,248,.15);box-shadow:inset 3px 0 0 var(--accent)}
+.endpoint.selected .path{color:var(--accent);font-weight:700}
+.method-group{width:100%;border-top:1px solid var(--border);margin-top:8px;padding-top:6px}
+.method-group:first-child{margin-top:0;border-top:none}
+.method-group h5{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;padding-left:4px}
+.method-group .count{float:right;font-size:10px;opacity:0.6}
+.curl-box{margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.curl-box .curl-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(0,0,0,.15);border-bottom:1px solid var(--border)}
+.curl-box .curl-header label{font-size:11px;color:var(--muted);margin:0;text-transform:uppercase;letter-spacing:.05em}
+.curl-box pre{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre-wrap;word-break:break-all;color:var(--text);padding:10px 12px;margin:0}
+.curl-copy{margin-left:auto;padding:4px 8px;font-size:11px;opacity:0.7}
+.curl-copy:hover{opacity:1;color:var(--accent)}
+.url-section{margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.url-section .url-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(0,0,0,.15);border-bottom:1px solid var(--border)}
+.url-section .url-header label{font-size:11px;color:var(--muted);margin:0;text-transform:uppercase;letter-spacing:.05em}
+.url-section input.url-input{flex:1;padding:8px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;background:var(--input);border:none;color:var(--text)}
+.url-section input.url-input:focus{border:none;outline:2px solid var(--accent);outline-offset:-2px}
+.learning-center{margin-top:16px;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--surface)}
+.learning-center .lc-header{padding:10px 14px;background:rgba(0,0,0,.15);border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:8px;user-select:none}
+.learning-center .lc-header:hover{background:rgba(0,0,0,.25)}
+.learning-center .lc-header h5{font-size:12px;color:var(--text);margin:0;flex:1}
+.learning-center .lc-toggle{font-size:10px;opacity:0.6}
+.learning-center .lc-content{padding:12px 14px;display:none}
+.learning-center .lc-content.show{display:block}
+.learning-center .lc-section{margin-bottom:12px}
+.learning-center .lc-section h6{font-size:11px;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.learning-center .lc-section p{font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:6px}
+.learning-center .lc-example{background:var(--input);border:1px solid var(--border);border-radius:4px;padding:8px 10px;font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:var(--accent);margin-bottom:6px}
+.learning-center .lc-parts{display:grid;gap:6px}
+.learning-center .lc-part{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);border-radius:4px;padding:6px 10px;font-size:11px}
+.learning-center .lc-part strong{color:var(--get)}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;padding:40px}
+.panel{flex:1;background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.panel header{padding:10px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center}
+.panel header h3{font-size:15px}
+.panel header .meta{font-size:11px;color:var(--muted);margin-left:10px}
+.content{flex:1;overflow:auto;padding:14px}
+.section{margin-bottom:18px;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.section h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.grid{display:flex;gap:10px}
+.row{display:flex;gap:10px;align-items:center;margin-bottom:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
+.row label{min-width:130px;font-size:12px;font-weight:600;color:var(--text)}
+.row input,row select,row textarea{flex:1;min-width:0}
+.pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:12px;font-size:11.5px;background:var(--surface);cursor:pointer}
+.pill.active{border-color:var(--accent);background:rgba(56,189,248,.15);color:var(--accent)}
+.pill input{display:none}
+.enum-title{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.textarea{width:100%;min-height:140px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.5;resize:vertical}
+.execute-bar{padding:12px 14px;border-top:1px solid var(--border);background:var(--panel);display:flex;gap:10px;align-items:center}
+.response{flex:0 0 auto;min-height:140px;max-height:45vh;overflow:auto;border-top:1px solid var(--border);background:var(--surface);display:none;padding:12px 14px}
+.response.show{display:block}
+.response h5{font-size:12px;margin-bottom:6px;color:var(--muted)}
+.res-status{font-size:12px;font-weight:700;margin-bottom:8px}
+.res-ok{color:var(--ok)}
+.res-err{color:var(--danger)}
+.json-key{color:var(--accent);font-weight:600}
+.json-string{color:#a5f3fc}
+.json-number{color:#fbbf24}
+.json-literal{color:#c4b5fd}
+.json-bracket{color:#f87171;font-weight:700}
+.json-colon{color:#94a3b8;font-weight:600}
+.json-plain{color:var(--text);white-space:pre-wrap;word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11.5px}
+.err-box{border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.07);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.err-type{font-weight:700;color:var(--danger);font-size:12.5px}
+.err-msg{font-size:12px;color:var(--text);margin-top:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;line-height:1.5}
+.err-loc{font-size:11px;color:var(--muted);margin-top:6px}
+.err-fix{margin-top:8px;padding:8px 10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.3);border-radius:5px}
+.err-fix strong{color:var(--accent);font-size:11.5px}
+.err-fix ul{margin:4px 0 0 16px;font-size:11.5px;color:var(--text);line-height:1.6}
+.err-raw{margin-top:8px}
+.err-raw summary{font-size:11px;color:var(--muted);cursor:pointer;user-select:none}
+.err-raw summary:hover{color:var(--accent)}
+.err-raw pre{font-size:10.5px;color:var(--muted);white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;margin-top:4px}
+.res-body{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-all;color:var(--text)}
+.copy{font-size:11px;color:var(--muted);margin-left:auto}
+.copy:hover{color:var(--accent)}
+.help{margin-top:10px;font-size:11px;color:var(--muted);line-height:1.5}
+.kbdrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hidden{display:none!important}
+.auth-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:flex;align-items:center;justify-content:center}
+.auth-modal.hidden{display:none}
+.auth-modal-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:18px 20px;width:460px;max-width:92vw;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.auth-modal-box h4{font-size:14px;margin-bottom:6px;color:var(--text)}
+.auth-modal-box p{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.auth-modal-box input{width:100%;padding:8px 10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;margin-bottom:10px}
+.auth-modal-actions{display:flex;gap:8px;align-items:center}
+#authStatus{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+#authBtn.authed{border-color:var(--ok);color:var(--ok)}
+</style>
+</head>
+<body class="dark">
+<div class="header">
+ <div style="display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap">
+  <label>OpenAPI URL</label>
+  <input type="text" inputmode="url" autocomplete="off" spellcheck="false" id="openapiUrl" placeholder="https://api.example.com/openapi.json" value="__HAMDHI_OPENAPI_URL__">
+  <button class="btn primary" id="fetchBtn">Load URL</button>
+  <button class="btn" id="refreshBtn" title="Refresh">↻</button>
+  <label style="font-size:11px;color:var(--muted)">or upload file:</label>
+  <input type="file" id="specFile" accept=".json,.yaml,.yml" style="font-size:11px;padding:3px">
+  <span id="fileStatus" style="font-size:11px;color:var(--muted);margin-left:6px"></span>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px">
+  <button class="btn" id="authBtn" title="Global JWT authorization — saved once, sent on every request">🔒 Authorize</button>
+  <label style="margin:0">Theme</label>
+  <select id="themeSelect" style="background:var(--input);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-size:12px">
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+    <option value="theme-orange">Orange</option>
+    <option value="theme-red">Red</option>
+    <option value="theme-blue">Blue</option>
+    <option value="theme-purple">Purple</option>
+    <option value="theme-green">Green</option>
+    <option value="theme-pink">Pink</option>
+    <option value="theme-matte-dark">Matte Dark</option>
+    <option value="theme-matte-light">Matte Light</option>
+    <option value="theme-matte-gray">Matte Gray</option>
+    <option value="theme-matte-sepia">Matte Sepia</option>
+    <option value="theme-matte-monokai">Matte Monokai</option>
+    <option value="theme-matte-solarized">Matte Solarized</option>
+  </select>
+ </div>
+</div>
+<div class="auth-modal hidden" id="authModal">
+ <div class="auth-modal-box">
+  <h4>🔒 Global Authorization</h4>
+  <p>Enter your JWT once. Hamdhi sends <code>Authorization: Bearer &lt;token&gt;</code> on <b>every</b> request automatically — like Swagger's Authorize. The token is saved in this browser until you log out.</p>
+  <input type="text" id="globalJwt" placeholder="Paste JWT — 'Bearer' keyword added automatically">
+  <div class="auth-modal-actions">
+   <button class="btn primary" id="authSave">Save &amp; Close</button>
+   <button class="btn" id="authLogout">Logout (clear token)</button>
+   <button class="btn" id="authCancel">Cancel</button>
+  </div>
+  <div id="authStatus"></div>
+ </div>
+</div>
+<div class="main">
+ <div class="sidebar">
+  <header>
+   <h2>Endpoints</h2>
+   <p id="specInfo">No spec loaded</p>
+  </header>
+  <div class="search">
+   <input type="search" id="endpointSearch" placeholder="Search paths / summary...">
+  </div>
+  <div class="tags" id="tagFilters"></div>
+  <div class="endpoints" id="endpointsList"></div>
+ </div>
+ <div class="panel">
+  <header>
+   <h3 id="opTitle">Select an endpoint</h3>
+  </header>
+  <div class="content" id="opContent">
+   <div class="empty">Click an endpoint on the left to view and test it.</div>
+  </div>
+  <div class="execute-bar">
+   <button class="btn primary" id="executeBtn" disabled>Execute (Ctrl+E)</button>
+   <button class="btn" id="shotBtn" title="Save evidence screenshot (PNG)">📸 Screenshot</button>
+   <span class="help">↑/↓ browse • Enter open • / search • Esc back</span>
+  </div>
+  <div class="response" id="responsePanel">
+   <h5>Response</h5>
+   <div class="res-status" id="resStatus"></div>
+   <div class="copy" id="copyCurl" title="Copy cURL">Copy cURL</div>
+   <div class="res-body" id="resBody"></div>
+  </div>
+ </div>
+</div>
+<script>
+const HAMDHI_OPENAPI_URL = "__HAMDHI_OPENAPI_URL__";
+const HAMDHI_INJECTED = (HAMDHI_OPENAPI_URL && HAMDHI_OPENAPI_URL!=="__HAMDHI_OPENAPI_URL__") ? HAMDHI_OPENAPI_URL.trim() : "";
+// Every place a Django/DRF/FastAPI/Spring project commonly serves its spec.
+// Order: Hamdhi's own (always exists now) -> most common Django -> FastAPI -> Spring.
+// Bump HAMDHI_VERSION when editing this list so stale cached pages self-identify.
+// Hamdhi WEB (standalone) — this build always talks to the target API through
+// the same-origin /api/proxy endpoint, so the browser never hits CORS.
+// The spec itself is fetched through /api/spec?url=...
+const HAMDHI_VERSION = "2.0.0-web";
+const HAMDHI_PROXY = "/api/proxy";
+const HAMDHI_SPEC_API = "/api/spec";
+
+const HAMDHI_DISCOVERY = ["/hamdhi/schema/", "/hamdhi/schema.json", "/hamdhi/openapi.json", "/api/schema/", "/api/schema.json",
+ "/api/docs/?format=openapi", "/api/docs?format=openapi", "/schema/",
+ "/schema.json", "/openapi.json", "/api/openapi.json", "/swagger.json",
+ "/api/swagger.json", "/v3/api-docs", "/openapi.yaml"];
+const isValidSpec = (j)=>{ if(!j||typeof j!=="object") return false;
+ if(j.openapi||j.swagger) return true;
+ if(j.paths&&typeof j.paths==="object"&&Object.keys(j.paths).length) return true;
+ return false; };
+// Normalize spec URLs so a missing leading slash can't turn
+// "/api/schema/" into "/hamdhi/api/schema/" (404).
+const normSpecUrl = (u)=>{
+ u = String(u||"").trim();
+ if(!u || u==="__HAMDHI_OPENAPI_URL__") return "";
+ if(u.startsWith("http://")||u.startsWith("https://")||u.startsWith("/")||u.startsWith("blob:")||u.startsWith("data:")) return u;
+ if(u==="openapi-example.json"||u.endsWith("/openapi-example.json")) {
+  // Resolve the demo file relative to the page directory.
+  // (When the page is /hamdhi without trailing slash, plain relative
+  //  resolution would give /openapi-example.json -> 404, so force dir base.)
+  try { const base = location.href.endsWith("/") ? location.href : location.href + "/"; return new URL(u.split("/").pop(), base).href; } catch { return u; }
+ }
+ return "/" + u; // force root-absolute: "api/schema/" -> "/api/schema/"
+};
+const clearSavedSpecUrl = ()=>{ try{ localStorage.removeItem("hamdhi_openapi_url"); }catch{} };
+// Resolve a possibly-relative spec URL to an absolute URL on this origin so it
+// can be forwarded to the server-side spec fetcher.
+const absSpecUrl = (u)=>{
+ try { return new URL(u, location.href).href; } catch { return u; }
+};
+
+const tryStoredSpecUrl = ()=>{ try{ return localStorage.getItem("hamdhi_openapi_url")||""; }catch{ return ""; } };
+const dedup = (arr)=>[...new Set(arr)];
+const state = {
+ spec: null,
+ resolved: null,
+ specOrigin: "",
+ baseUrl: "",
+ servers: [],
+ selectedServer: 0,
+ selected: null,
+ tags: [],
+ activeTag: "All",
+ search: "",
+ params: {},
+  urlTouched: false,
+ body: "",
+ auth: { bearer: localStorage.getItem("hamdhi_jwt")||"", apiKey: "", apiKeyName: "", basicUser: "", basicPass: "" },
+ history: JSON.parse(localStorage.getItem("hamdhi_history") || "[]")
+};
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>Array.from(document.querySelectorAll(s));
+const on = (ev,sel,cb)=>document.addEventListener(ev,e=>{if(e.target.matches(sel))cb(e);});
+const escHtml = (s)=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const highlightJson = (text)=>{
+ try{
+  const json = JSON.parse(text);
+  const html = JSON.stringify(json, null, 2)
+   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+   .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, (m, key)=>{
+    if(key.endsWith(":")) return `<span class="json-key">${key.slice(0,-1)}</span><span class="json-colon">:</span>`;
+    return `<span class="json-string">${m}</span>`;
+   })
+   .replace(/\b(true|false|null)\b/g, '<span class="json-literal">$1</span>')
+   .replace(/\b(-?\d+\.?\d*)\b/g, '<span class="json-number">$1</span>')
+   .replace(/[\[\]{},]/g, '<span class="json-bracket">$&</span>');
+  return html;
+ }catch{ return `<span class="json-plain">${escHtml(text)}</span>`; }
+};
+const parseServerError = (html, status, statusText)=>{
+ const info = {type:"", message:"", location:"", raised:"", raw:""};
+ try{
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const excVal = doc.querySelector("pre.exception_value");
+  const title = ((doc.querySelector("title")||{}).textContent||"").trim();
+  if(excVal || / at \//.test(title)){
+   info.type = title.split("\n")[0].trim().replace(/\s+at\s+\S+.*$/,"");
+   info.message = ((excVal||{}).textContent||"").trim();
+   doc.querySelectorAll("#summary table.meta tr").forEach(tr=>{
+    const th = ((tr.querySelector("th")||{}).textContent||"").trim();
+    const td = ((tr.querySelector("td")||{}).textContent||"").trim();
+    if(th.includes("Exception Location")) info.location = td;
+    if(th.includes("Raised during")) info.raised = td;
+    if(th.includes("Exception Type") && !info.type) info.type = td;
+    if(th.includes("Exception Value") && !info.message) info.message = td;
+   });
+  }
+  if(!info.type){
+   info.type = "HTML error response ("+status+" "+statusText+")";
+   info.message = title || "Server returned an HTML page instead of JSON.";
+  }
+ }catch(e){
+  info.type = "HTML error response ("+status+")";
+  info.message = "Server returned HTML — could not parse the error.";
+ }
+ info.raw = html.length>6000 ? html.slice(0,6000)+"\n… (truncated)" : html;
+ return info;
+};
+const errorHints = (info, status)=>{
+ const h = [];
+ const msg = ((info&&info.message)||"");
+ if(/Expected a .?Response/.test(msg) && /dict/.test(msg)){
+  h.push("Your Django REST Framework view returned a plain dict instead of a DRF Response.");
+  h.push("Fix: wrap the return value — return Response({...}) — and keep the @api_view([...]) decorator on the view.");
+ } else {
+  if(status===401) h.push("Token missing or expired — click 🔒 Authorize in the header and save a valid JWT.");
+  if(status===403) h.push("Forbidden — if this is a CSRF-protected POST, send an X-CSRFToken header or use token auth instead of session auth.");
+  if(status===404) h.push("Not found — check the path, path variable values, and the selected server base URL.");
+  if(status===405) h.push("Method not allowed — this endpoint does not accept that HTTP method (see supported methods in the spec).");
+  if(status===429) h.push("Rate limited — wait a moment and retry.");
+  if(status>=500) h.push("Server-side error — read the exception above and check your server console/stack trace.");
+ }
+ if(!h.length && status>=400) h.push("Check the request URL, parameters, body, and authentication, then retry.");
+ return h;
+};
+const renderErrorPanel = (info, hints)=>{
+ return '<div class="err-box">'
+ + '<div class="err-type">'+escHtml(info.type||"Error")+'</div>'
+ + '<div class="err-msg">'+escHtml(info.message||"")+'</div>'
+ + (info.location?'<div class="err-loc">📍 '+escHtml(info.location)+(info.raised?' • raised during: '+escHtml(info.raised):'')+'</div>':'')
+ + (hints&&hints.length?'<div class="err-fix"><strong>💡 How to fix</strong><ul>'+hints.map(x=>'<li>'+escHtml(x)+'</li>').join("")+'</ul></div>':'')
+ + (info.raw?'<details class="err-raw"><summary>Show raw response</summary><pre>'+escHtml(info.raw)+'</pre></details>':'')
+ + '</div>';
+};
+const resolveRefs = (obj, root)=>{
+ if(Array.isArray(obj)) return obj.map(v=>resolveRefs(v,root));
+ if(obj&&typeof obj==="object"){
+  if(obj.$ref&&typeof obj.$ref==="string"){
+   const ref = obj.$ref;
+   if(ref.startsWith("#/")){
+    const parts = ref.slice(2).split("/");
+    let cur = root;
+    for(const p of parts){ cur = cur && cur[p] !== undefined ? cur[p] : undefined; }
+    if(cur) return resolveRefs(cur, root);
+   }
+   return obj;
+  }
+  const out = {};
+  for(const k in obj) out[k] = resolveRefs(obj[k], root);
+  return out;
+ }
+ return obj;
+};
+const processSpec = (spec, sourceLabel="")=>{
+ try{
+  state.spec = spec;
+  state.resolved = resolveRefs(spec, spec);
+  state.baseUrl = "";
+  // Resolve server URLs against the origin of the spec URL. Many specs use
+  // relative servers (e.g. "/api/v3") which only make sense relative to
+  // where the spec was served from - never relative to the Hamdhi page.
+  // For uploaded files there is no spec origin, so relative servers stay
+  // relative and the user can type the base URL into the Request URL box.
+  const specOrigin = (()=>{
+   if(!/^https?:\/\//i.test(String(sourceLabel||""))) return "";
+   try { return new URL(sourceLabel).origin; } catch { return ""; }
+  })();
+  state.specOrigin = specOrigin;
+  state.servers = (spec.servers||[]).map(s=>s&&s.url).filter(Boolean).map(u=>{
+   if(/^https?:\/\//i.test(u)) return u.replace(/\/$/,"");
+   if(specOrigin) return specOrigin + (u.startsWith("/")?u:"/"+u).replace(/\/$/,"");
+   return u.replace(/\/$/,"");
+  });
+  // No servers declared: fall back to the origin that served the spec.
+  if(!state.servers.length && specOrigin) state.servers = [specOrigin];
+  if(state.servers.length) state.baseUrl = state.servers[0];
+  state.tags = [...new Set(Object.values(state.resolved.paths||{}).flatMap(opObj=>Object.values(opObj||{})).filter(Boolean).flatMap(op=>op.tags||[]).filter(Boolean))];
+  state.search = "";
+  renderTags();
+  renderEndpoints();
+  const title = (state.resolved.info&&state.resolved.info.title)||"API";
+  const pathCount = Object.keys(state.resolved.paths||{}).length;
+  $("#specInfo").textContent = `${title} • ${pathCount} paths${sourceLabel?" — "+sourceLabel:""}`;
+  $("#opContent").innerHTML = '<div class="empty">Select an endpoint on the left to view and test it.</div>';
+  return true;
+ }catch(err){
+  $("#specInfo").textContent = "Error processing spec";
+  $("#opContent").innerHTML = `<div class="empty" style="color:var(--danger)">Failed to process OpenAPI spec: ${escHtml(err.message)}</div>`;
+  console.error(err);
+  return false;
+ }
+};
+const fetchSpec = async (url, opts={})=>{
+ const isAutoRetry = !!opts._auto;
+ try{
+  url = normSpecUrl(url);
+  if(!url && !isAutoRetry){
+   throw new Error('No OpenAPI URL configured. Paste a spec URL above (e.g. https://api.example.com/openapi.json) and press "Load URL".');
+  }
+  if(!url){
+   // Silent probe miss during auto-discovery — caller tries next candidate.
+   if(isAutoRetry) return false;
+   throw new Error('Empty OpenAPI URL. Enter e.g. /hamdhi/schema/ and click Load URL.');
+  }
+  state.spec = null;
+  state.resolved = null;
+  if(!isAutoRetry){
+   $("#specInfo").textContent = "Loading…";
+   $("#endpointsList").innerHTML = "";
+   $("#opContent").innerHTML = '<div class="empty">Loading spec…</div>';
+  }
+   // Fetch the spec through the server-side spec endpoint. This avoids CORS
+   // entirely and also converts YAML specs into JSON for the UI.
+   let resp;
+   const specApiUrl = HAMDHI_SPEC_API + "?url=" + encodeURIComponent(absSpecUrl(url));
+   try { resp = await fetch(specApiUrl, { headers: { 'Accept': 'application/json' } }); }
+   catch(netErr){ throw new Error('Network error: could not reach ' + url + ' - is the server running? (' + (netErr && netErr.message ? netErr.message : 'fetch failed') + ')'); }
+   if(!resp.ok){
+    let detail = "";
+    try {
+     const t = await resp.clone().text();
+     try {
+      const j = JSON.parse(t);
+      if(j && (j.error || j.body)) detail = "\n\n" + (j.error||"") + (j.body ? "\n" + String(j.body).slice(0,600) : "");
+     } catch { if(t && t.length < 600) detail = "\n\n" + t; }
+    } catch {}
+    throw new Error(`HTTP ${resp.status} while fetching ${url}${detail}`);
+   }
+   let payload;
+   try { payload = await resp.json(); }
+   catch { throw new Error('Could not parse the spec response from ' + url); }
+   if(payload && payload.error) throw new Error(payload.error);
+   const spec = payload && payload.spec;
+   // Reject error-JSON / login pages that parse but are not specs,
+   // so auto-discovery keeps trying instead of showing 0 endpoints.
+   if(!isValidSpec(spec)) throw new Error('Response at ' + url + ' is JSON but not an OpenAPI spec (missing openapi/swagger/paths).');
+   processSpec(spec, payload.url || url);
+   try{localStorage.setItem("hamdhi_openapi_url", url);}catch{}
+   return true;
+ }catch(err){
+  if(isAutoRetry) return false; // quiet probe: no UI spam, no console flood
+  $("#specInfo").textContent = "Error loading spec";
+  $("#opContent").innerHTML = `<div class="empty" style="color:var(--danger)">Failed to load OpenAPI spec: ${escHtml(err.message)}<br><br><button class="btn small" id="resetSavedUrl">Reset saved URL &amp; retry server default</button> <span style="color:var(--muted)">(clears the remembered URL that may be pointing at /hamdhi/...)</span></div>`;
+  const rb = $("#resetSavedUrl");
+  if(rb) rb.onclick = async ()=>{ clearSavedSpecUrl(); const dflt = normSpecUrl(HAMDHI_INJECTED) || "/hamdhi/schema/"; $("#openapiUrl").value = dflt; await fetchSpec(dflt); };
+  console.error(err);
+  return false;
+ }
+};
+const loadSpecFromText = (text, fileName)=>{
+ try{
+  let spec;
+  try { spec = JSON.parse(text); }
+  catch { throw new Error('Uploaded file is not valid JSON.'); }
+  if(!spec.openapi&&!spec.swagger) throw new Error('File does not appear to be an OpenAPI spec (missing openapi/swagger field).');
+  processSpec(spec, fileName||"Uploaded file");
+  $("#fileStatus").textContent = `Loaded: ${fileName}`;
+  $("#fileStatus").style.color = "var(--ok)";
+ }catch(err){
+  $("#specInfo").textContent = "Error loading file";
+  $("#opContent").innerHTML = `<div class="empty" style="color:var(--danger)">Failed to load OpenAPI file: ${escHtml(err.message)}</div>`;
+  $("#fileStatus").textContent = "Error: invalid file";
+  $("#fileStatus").style.color = "var(--danger)";
+  console.error(err);
+ }
+};
+const renderTags = ()=>{
+ const wrap = $("#tagFilters");
+ wrap.innerHTML = "";
+ const all = document.createElement("button");
+ all.className = "tag"+(state.activeTag==="All"?" active":"");
+ all.textContent = "All";
+ all.onclick = ()=>{ state.activeTag="All"; renderEndpoints(); };
+ wrap.appendChild(all);
+ state.tags.forEach(t=>{
+  const b = document.createElement("button");
+  b.className = "tag"+(state.activeTag===t?" active":"");
+  b.textContent = t;
+  b.onclick = ()=>{ state.activeTag=t; renderEndpoints(); };
+  wrap.appendChild(b);
+ });
+};
+const methodCls = m=>"m-"+(m||"get").toLowerCase().replace(/[^a-z]/g,"");
+const METHOD_ORDER = ["get","post","put","patch","delete","head","options","trace"];
+const renderEndpoints = ()=>{
+ const list = $("#endpointsList");
+ list.innerHTML = "";
+ const paths = state.resolved?.paths||{};
+ const term = state.search.toLowerCase();
+ const byMethod = {};
+ for(const [path, opObj] of Object.entries(paths)){
+  if(!opObj||typeof opObj!=="object") continue;
+  for(const [method, op] of Object.entries(opObj)){
+   if(!op||typeof op!=="object") continue;
+   if(method==="parameters") continue;
+   const tags = op.tags||[];
+   if(state.activeTag!=="All"&&!tags.includes(state.activeTag)) continue;
+   const text = (path+" "+(op.summary||"")+(op.description||"")).toLowerCase();
+   if(term&&!text.includes(term)) continue;
+   if(!byMethod[method]) byMethod[method] = [];
+   byMethod[method].push({path, method:method.toUpperCase(), op});
+  }
+ }
+ const ordered = METHOD_ORDER.filter(m=>byMethod[m]);
+ Object.keys(byMethod).filter(m=>!METHOD_ORDER.includes(m)).forEach(m=>ordered.push(m));
+ let total = 0;
+ ordered.forEach(m=>{
+  const group = document.createElement("div");
+  group.className = "method-group";
+  const h5 = document.createElement("h5");
+  h5.textContent = m.toUpperCase();
+  const cnt = document.createElement("span"); cnt.className="count"; cnt.textContent = byMethod[m].length;
+  h5.appendChild(cnt);
+  group.appendChild(h5);
+  byMethod[m].forEach(item=>{
+   const {path, method, op} = item;
+   const el = document.createElement("div");
+   el.className = "endpoint "+methodCls(method)+(op.deprecated?" deprecated":"")+(state.selected&&state.selected.path===path&&state.selected.method===method.toUpperCase()?" selected":"");
+   const showExec = !["POST","PUT","PATCH","DELETE"].includes(method);
+   el.innerHTML = `<span class="method ${methodCls(method)}">${method}</span><span class="path">${escHtml(path)}</span><span class="summary">${escHtml(op.summary||"")}</span>${showExec?`<button class="btn-exec" title="Execute">▶</button>`:""}`;
+   el.onclick = (e)=>{ if(e.target.classList.contains("btn-exec")){ e.stopPropagation(); state.selected={path, method}; renderEndpoints(); renderOperation(path, method); executeRequest(); } else { state.selected={path, method}; renderEndpoints(); renderOperation(path, method); } };
+   group.appendChild(el);
+   total++;
+  });
+  list.appendChild(group);
+ });
+ if(total===0) list.innerHTML = '<div class="empty">No endpoints match</div>';
+};
+const paramKey = (p)=>(p.in||"query")+"|"+(p.name||"");
+const schemaExample = (schema)=>{
+ if(!schema||typeof schema!=="object") return "";
+ if(schema.example!==undefined) return schema.example;
+ if(schema.default!==undefined) return schema.default;
+ if(schema.type==="string") return schema.enum?schema.enum[0]:"example";
+ if(schema.type==="integer") return 0;
+ if(schema.type==="number") return 0.0;
+ if(schema.type==="boolean") return true;
+ if(schema.type==="array") return schema.items?[schemaExample(schema.items)]:[];
+ if(schema.type==="object"){
+  const out={};
+  for(const k in (schema.properties||{})) out[k]=schemaExample(schema.properties[k]);
+  return out;
+ }
+ return "";
+};
+const createParamUI = (p, path)=>{
+ const param = resolveRefs(p, state.resolved);
+ const name = param.name;
+ const key = paramKey(param);
+ const schema = param.schema||{type:"string"};
+ const required = param.required;
+ const def = schema.default;
+ let curVal = state.params[key];
+ if(curVal===undefined) curVal = def!==undefined?def:(schema.example!==undefined?schema.example:"");
+ state.params[key] = curVal;
+ const div = document.createElement("div");
+ div.className = "row";
+ const enm = schema.enum;
+ if(enm){
+  const vals = Array.isArray(enm)?enm:[];
+  const sel = curVal!==undefined?curVal:(def!==undefined?def:vals[0]);
+  let pillsHtml = vals.map(v=>`<label class="pill${sel==v?" active":""}" data-param="${escHtml(key)}" data-val="${escHtml(String(v))}"><input type="radio" name="param_${key}" value="${escHtml(String(v))}"${sel==v?" checked":""}>${escHtml(String(v))}</label>`).join("");
+  div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0">${pillsHtml}<div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
+ }else if(schema.type==="boolean"){
+  const sel = curVal!==undefined?curVal:(def!==undefined?def:true);
+  div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0"><label class="pill${sel===true?" active":""}" data-param="${escHtml(key)}" data-val="true"><input type="radio" name="param_${key}" value="true"${sel===true?" checked":""}>true</label><label class="pill${sel===false?" active":""}" data-param="${escHtml(key)}" data-val="false"><input type="radio" name="param_${key}" value="false"${sel===false?" checked":""}>false</label><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
+ }else{
+  const placeholder = schema.format==="date-time"?"2026-10-19T00:00:00Z":(schema.format==="date"?"2026-10-19":(schema.format==="email"?"name@example.com":(schema.format==="uuid"?"550e8400-e29b-41d4-a716-446655440000":(schema.example!==undefined?String(schema.example):(schema.type==="number"||schema.type==="integer")?0:""))));
+  div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0"><input type="text" name="param_${key}" value="${escHtml(String(curVal))}" placeholder="${placeholder}"${required?" required":""} onchange="state.params['${key}']=this.value; refreshUrlPreview()"><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
+ }
+ return div;
+};
+const renderOperation = (path, method)=>{
+ const opObj = state.resolved.paths[path];
+ const op = opObj[method.toLowerCase()];
+ if(!op) return;
+ const content = $("#opContent");
+ content.innerHTML = "";
+ state.params = {};
+ state.customUrl = undefined;
+ state.urlTouched = false;
+ state.lastResponse = null;
+ state.body = "";
+ const opTitleEl = $("#opTitle");
+ if(opTitleEl) opTitleEl.textContent = method + " " + path;
+ const title = document.createElement("div");
+ title.style.display="flex"; title.style.justifyContent="space-between"; title.style.alignItems="center"; title.style.marginBottom="10px";
+ const h = document.createElement("h3");
+ h.textContent = method+" "+path;
+ if(op.deprecated) h.className="deprecated";
+ title.appendChild(h);
+ const serversWrap = document.createElement("div");
+ serversWrap.style.fontSize="11px"; serversWrap.style.color="var(--muted)"; serversWrap.style.marginBottom="8px";
+ if(state.servers.length){
+  const sel = document.createElement("select");
+  sel.style.marginLeft="8px"; sel.style.padding="2px 6px"; sel.style.background="var(--input)"; sel.style.border="1px solid var(--border)"; sel.style.color="var(--text)"; sel.style.borderRadius="4px";
+  state.servers.forEach((s,i)=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; if(i===state.selectedServer) o.selected=true; sel.appendChild(o); });
+  sel.onchange=(e)=>{ state.selectedServer=parseInt(sel.value); state.baseUrl=sel.value; };
+  serversWrap.textContent = "Server: ";
+  serversWrap.appendChild(sel);
+ }
+ title.appendChild(serversWrap);
+ content.appendChild(title);
+ const desc = document.createElement("div");
+ desc.style.marginBottom="12px"; desc.style.fontSize="12.5px"; desc.style.color="var(--text)"; desc.style.lineHeight="1.5";
+ desc.innerHTML = escHtml(op.description||"");
+ content.appendChild(desc);
+ const grid = document.createElement("div"); grid.className="grid";
+ const pathParams = (op.parameters||[]).filter(p=>p.in==="path");
+ if(pathParams.length){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Path Parameters"; sec.appendChild(h4);
+  pathParams.forEach(p=>{ sec.appendChild(createParamUI(p, path)); });
+  grid.appendChild(sec);
+ }
+ const queryParams = (op.parameters||[]).filter(p=>p.in==="query");
+ if(queryParams.length){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Query Parameters"; sec.appendChild(h4);
+  queryParams.forEach(p=>{ sec.appendChild(createParamUI(p, path)); });
+  grid.appendChild(sec);
+ }
+ const headerParams = (op.parameters||[]).filter(p=>p.in==="header");
+ if(headerParams.length){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Header Parameters"; sec.appendChild(h4);
+  headerParams.forEach(p=>{ sec.appendChild(createParamUI(p, path)); });
+  grid.appendChild(sec);
+ }
+ const cookieParams = (op.parameters||[]).filter(p=>p.in==="cookie");
+ if(cookieParams.length){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Cookie Parameters"; sec.appendChild(h4);
+  cookieParams.forEach(p=>{ sec.appendChild(createParamUI(p, path)); });
+  grid.appendChild(sec);
+ }
+ content.appendChild(grid);
+ if(op.requestBody){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Request Body"; sec.appendChild(h4);
+  const ct = op.requestBody.content||{};
+  const jsonCt = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
+  if(jsonCt){
+   const media = ct[jsonCt];
+   const schema = media&&media.schema?resolveRefs(media.schema, state.resolved):null;
+   const exFromMedia = media.example!==undefined?media.example:(media.examples?Object.values(media.examples)[0].value:undefined);
+   const exVal = schema?schemaExample(schema):"";
+   const initVal = exFromMedia!==undefined?JSON.stringify(exFromMedia,null,2):(exVal!==undefined?JSON.stringify(exVal,null,2):"");
+   const ta = document.createElement("textarea");
+   ta.className="textarea"; ta.id="bodyText"; ta.value = initVal;
+   ta.placeholder = '{"key": "value"}';
+   sec.appendChild(ta);
+   const ctLabel = document.createElement("div"); ctLabel.style.fontSize="10px"; ctLabel.style.color="var(--muted)"; ctLabel.style.marginTop="6px"; ctLabel.textContent = "Content-Type: "+jsonCt;
+   sec.appendChild(ctLabel);
+  }
+  content.appendChild(sec);
+ }
+ const responses = op.responses||{};
+ if(Object.keys(responses).length){
+  const sec = document.createElement("section"); sec.className="section";
+  const h4 = document.createElement("h4"); h4.textContent = "Responses"; sec.appendChild(h4);
+  for(const [code, resp] of Object.entries(responses)){
+   if(!resp) continue;
+   const rdiv = document.createElement("div"); rdiv.style.marginBottom="10px"; rdiv.style.padding="8px"; rdiv.style.background="var(--surface)"; rdiv.style.border="1px solid var(--border)"; rdiv.style.borderRadius="6px";
+   const rhead = document.createElement("div"); rhead.style.fontWeight="700"; rhead.style.fontSize="12px"; rhead.style.marginBottom="4px";
+   const codeBadge = document.createElement("span"); codeBadge.className="badge"; codeBadge.textContent = code; codeBadge.style.marginRight="8px";
+   rhead.appendChild(codeBadge);
+   if(resp.description) rhead.appendChild(document.createTextNode(" "+escHtml(resp.description)));
+   rdiv.appendChild(rhead);
+   const ct = resp.content||{};
+   const jsonCt2 = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
+   if(jsonCt2){
+    const media = ct[jsonCt2];
+    const schema = media&&media.schema?resolveRefs(media.schema, state.resolved):null;
+    const ex = schema?schemaExample(schema):(media.example!==undefined?media.example:(media.examples?Object.values(media.examples)[0].value:undefined));
+    const pre = document.createElement("pre"); pre.style.fontSize="11px"; pre.style.marginTop="6px"; pre.style.whiteSpace="pre-wrap"; pre.style.color="var(--muted)";
+    pre.textContent = ex!==undefined?JSON.stringify(ex,null,2):"";
+    rdiv.appendChild(pre);
+   }
+   sec.appendChild(rdiv);
+  }
+  content.appendChild(sec);
+ }
+ // Authentication section (JWT)
+ const authSec = document.createElement("section"); authSec.className="section url-section";
+ const authHead = document.createElement("div"); authHead.className="url-header";
+ const authLabel = document.createElement("label"); authLabel.textContent = "Authentication — JWT";
+ authHead.appendChild(authLabel);
+ authSec.appendChild(authHead);
+ const authRow = document.createElement("div"); authRow.style.padding="8px 12px";
+ const jwtInput = document.createElement("input");
+ jwtInput.type = "text"; jwtInput.id = "jwtInput"; jwtInput.className = "url-input";
+ jwtInput.placeholder = "Paste JWT token — 'Bearer' keyword added automatically";
+ jwtInput.value = state.auth.bearer||"";
+ authRow.appendChild(jwtInput);
+ authSec.appendChild(authRow);
+ const authHint = document.createElement("div");
+ authHint.id = "authHint";
+ authHint.style.padding = "6px 12px 8px"; authHint.style.fontSize = "11px"; authHint.style.color = "var(--muted)";
+ const renderAuthHint = ()=>{ authHint.innerHTML = authStatusHtml(); };
+ renderAuthHint();
+ authSec.appendChild(authHint);
+ jwtInput.oninput = (e)=>{
+  let v = e.target.value;
+  v = v.replace(/^bearer\s+/i, "").trim();
+  state.auth.bearer = v;
+  localStorage.setItem("hamdhi_jwt", v);
+  renderAuthHint();
+  updateAuthBtn();
+  if(typeof curlPre!=="undefined"&&curlPre) curlPre.textContent = buildCurl(state.customUrl||genUrl.value, method, authHeaders(), state.body||"");
+ };
+ content.appendChild(authSec);
+ // Editable auto-generated URL section
+ const urlSec = document.createElement("section"); urlSec.className="section url-section";
+ const urlHead = document.createElement("div"); urlHead.className="url-header";
+ const urlLabel = document.createElement("label"); urlLabel.textContent = "Request URL";
+ const urlCopy = document.createElement("div"); urlCopy.className="curl-copy"; urlCopy.textContent = "Copy";
+ urlCopy.onclick = ()=>{ navigator.clipboard.writeText($("#genUrl").value); urlCopy.textContent="Copied!"; setTimeout(()=>urlCopy.textContent="Copy",1200); };
+ urlHead.appendChild(urlLabel); urlHead.appendChild(urlCopy);
+ urlSec.appendChild(urlHead);
+ const genUrl = document.createElement("input"); genUrl.id="genUrl"; genUrl.className="url-input";
+ genUrl.value = buildUrl(path, method);
+ genUrl.oninput = (e)=>{ state.customUrl = e.target.value; state.urlTouched = true; };
+ urlSec.appendChild(genUrl);
+ content.appendChild(urlSec);
+ // cURL command section
+ const curlSec = document.createElement("section"); curlSec.className="section curl-box";
+ const curlHead = document.createElement("div"); curlHead.className="curl-header";
+ const curlLabel = document.createElement("label"); curlLabel.textContent = "cURL Command";
+ const curlCopyBtn = document.createElement("div"); curlCopyBtn.className="curl-copy"; curlCopyBtn.id="curlCopyBtn"; curlCopyBtn.textContent = "Copy cURL";
+ curlHead.appendChild(curlLabel); curlHead.appendChild(curlCopyBtn);
+ curlSec.appendChild(curlHead);
+ const curlPre = document.createElement("pre"); curlPre.id="curlPreview"; curlPre.textContent = buildCurl(buildUrl(path, method), method, authHeaders(), state.body||"");
+ curlSec.appendChild(curlPre);
+ content.appendChild(curlSec);
+ // Update cURL when URL changes
+ genUrl.oninput = (e)=>{ 
+  state.customUrl = e.target.value;
+  state.urlTouched = true;
+  curlPre.textContent = buildCurl(state.customUrl, method, authHeaders(), state.body||"");
+ };
+ curlCopyBtn.onclick = ()=>{ navigator.clipboard.writeText(curlPre.textContent); curlCopyBtn.textContent="Copied!"; setTimeout(()=>curlCopyBtn.textContent="Copy cURL",1200); };
+ // Learning Center
+ const lc = document.createElement("section"); lc.className="learning-center";
+ const lcHead = document.createElement("div"); lcHead.className="lc-header";
+ const lcTitle = document.createElement("h5"); lcTitle.textContent = "Learning Center — URL Anatomy & Path Variables";
+ const lcToggle = document.createElement("span"); lcToggle.className="lc-toggle"; lcToggle.textContent = "▼";
+ lcHead.appendChild(lcTitle); lcHead.appendChild(lcToggle);
+ lcHead.onclick = ()=>{ lcContent.classList.toggle("show"); lcToggle.textContent = lcContent.classList.contains("show")?"▲":"▼"; };
+ lc.appendChild(lcHead);
+ const lcContent = document.createElement("div"); lcContent.className="lc-content";
+ lcContent.innerHTML = `
+ <div class="lc-section">
+  <h6>What is a URL?</h6>
+  <p>A URL (Uniform Resource Locator) is the address of a resource on the web. It tells your browser or API client where to find data and how to access it.</p>
+  <div class="lc-example">https://api.example.com:8080/users/123?role=admin&active=true#section</div>
+ </div>
+ <div class="lc-section">
+  <h6>Parts of a URL</h6>
+  <div class="lc-parts">
+   <div class="lc-part"><strong>Scheme</strong>: <code>https</code> — the protocol used to communicate</div>
+   <div class="lc-part"><strong>Host</strong>: <code>api.example.com</code> — the server domain name</div>
+   <div class="lc-part"><strong>Port</strong>: <code>:8080</code> — the network port (optional, defaults to 80/443)</div>
+   <div class="lc-part"><strong>Path</strong>: <code>/users/123</code> — the specific resource location on the server</div>
+   <div class="lc-part"><strong>Query</strong>: <code>?role=admin&amp;active=true</code> — extra parameters sent to the server</div>
+   <div class="lc-part"><strong>Fragment</strong>: <code>#section</code> — an anchor within the page (optional)</div>
+  </div>
+ </div>
+ <div class="lc-section">
+  <h6>Path Variables (Path Parameters)</h6>
+  <p>Path variables are dynamic parts of the URL path that identify a specific resource. They appear as named placeholders in the OpenAPI spec, like <code>/students/{studentId}</code>.</p>
+  <div class="lc-example">Template: /students/{studentId}<br>Real URL: /students/42</div>
+  <p>In Hamdhi, path variables appear under "Path Parameters" in the right panel. Fill in the value and Hamdhi automatically replaces <code>{studentId}</code> in the URL before executing.</p>
+ </div>
+ <div class="lc-section">
+  <h6>Query Parameters</h6>
+  <p>Query parameters are appended after a <code>?</code> in the URL, separated by <code>&amp;</code>. They are used for filtering, pagination, and optional settings.</p>
+  <div class="lc-example">/search?q=alice&amp;status=active&amp;page=1</div>
+ </div>
+ `;
+ lc.appendChild(lcContent);
+ content.appendChild(lc);
+ const executeBtn = $("#executeBtn"); executeBtn.disabled = false;
+ $("#responsePanel").classList.remove("show");
+ $("#resBody").textContent = "";
+ $("#resStatus").textContent = "";
+};
+// Substitute {paramName} placeholders in a URL with the values the user entered
+// for path parameters. Returns the URL unchanged when there is nothing to do.
+const applyPathParams = (url, path, method)=>{
+ const opObj = state.resolved.paths[path];
+ if(!opObj) return url;
+ const op = opObj[method.toLowerCase()]||{};
+ const allParams = [].concat(opObj.parameters||[], op.parameters||[]);
+ const pathParams = allParams.filter(p=>p.in==="path");
+ if(!pathParams.length) return url;
+ let urlPath = url;
+ // Longest names first so {id2} is not clipped by a {id} replacement.
+ const sortedParams = pathParams.map(p=>resolveRefs(p, state.resolved)).sort((a,b)=>(b.name||"").length-(a.name||"").length);
+ sortedParams.forEach(param=>{
+  const val = state.params[paramKey(param)];
+  if(val===undefined||val===""||val===null) return;
+  const placeholder = "{"+param.name+"}";
+  urlPath = urlPath.split(placeholder).join(encodeURIComponent(val));
+ });
+ return urlPath;
+};
+const buildUrl = (path, method)=>{
+ const opObj = state.resolved.paths[path];
+ const op = opObj[method.toLowerCase()];
+ let url = (state.baseUrl||"")+path;
+ // Handle path parameters - replace {paramName} placeholders with actual values
+ url = applyPathParams(url, path, method);
+ const qs = [];
+ (op.parameters||[]).forEach(p=>{
+  if(p.in!=="query") return;
+  const param = resolveRefs(p, state.resolved);
+  const key = paramKey(param);
+  const val = state.params[key];
+  if(val===undefined||val===""||val===null) return;
+  qs.push(encodeURIComponent(param.name)+"="+encodeURIComponent(val));
+ });
+ if(qs.length) url += "?"+qs.join("&");
+ return url;
+};
+// Rebuild the Request URL + cURL preview when parameter values change.
+// If the user typed into the URL box we never overwrite it (urlTouched).
+const refreshUrlPreview = ()=>{
+ if(!state.selected) return;
+ if(state.urlTouched){ refreshCurlIfOpen(); return; }
+ const {path, method} = state.selected;
+ const genUrl = $("#genUrl");
+ if(genUrl) genUrl.value = buildUrl(path, method);
+ refreshCurlIfOpen();
+};
+const buildCurl = (url, method, headers, body)=>{
+ let cmd = "curl -X "+method+" '"+url+"'";
+ for(const k in headers) cmd += " -H '"+k+": "+headers[k]+"'";
+ if(body) cmd += " -d '"+body.replace(/'/g,"'\\''")+"'";
+ return cmd;
+};
+const authHeaders = ()=>{
+ const h = {};
+ if(state.auth.apiKeyName&&state.auth.apiKey) h[state.auth.apiKeyName]=state.auth.apiKey;
+ if(state.auth.basicUser) h["Authorization"]="Basic "+btoa(state.auth.basicUser+":"+state.auth.basicPass);
+ const jwt = (state.auth.bearer||"").trim();
+ if(jwt) h["Authorization"]="Bearer "+jwt;
+ return h;
+};
+const authStatusHtml = ()=>{
+ const jwt = (state.auth.bearer||"").trim();
+ if(jwt) return '<span style="color:var(--ok)">✓ Auth active</span> — sent as: <code style="color:var(--accent)">Authorization: Bearer ' + escHtml(jwt.substring(0,14)) + (jwt.length>14?"…":"") + '</code>';
+ return 'No token — requests are sent unauthenticated.';
+};
+const updateAuthBtn = ()=>{
+ const btn = $("#authBtn"); if(!btn) return;
+ if((state.auth.bearer||"").trim()){ btn.textContent = "✓ Authorized"; btn.classList.add("authed"); }
+ else { btn.textContent = "🔒 Authorize"; btn.classList.remove("authed"); }
+};
+const refreshCurlIfOpen = ()=>{
+ const pre = $("#curlPreview"); if(!pre||!state.selected) return;
+ const url = state.customUrl || ($("#genUrl")? $("#genUrl").value : buildUrl(state.selected.path, state.selected.method));
+ pre.textContent = buildCurl(url, state.selected.method, authHeaders(), state.body||"");
+};
+const syncAuthUi = ()=>{
+ const j = $("#jwtInput"); if(j) j.value = state.auth.bearer||"";
+ const h = $("#authHint"); if(h) h.innerHTML = authStatusHtml();
+ updateAuthBtn();
+ refreshCurlIfOpen();
+};
+const applyJwt = (v)=>{
+ v = (v||"").replace(/^bearer\s+/i,"").trim();
+ state.auth.bearer = v;
+ localStorage.setItem("hamdhi_jwt", v);
+ syncAuthUi();
+ return v;
+};
+// Route an API request through the same-origin /api/proxy endpoint.
+// The proxy replays the call server-side, so the browser is never blocked
+// by CORS. Returns a Response-like object so the UI code stays unchanged.
+const proxyFetch = async (url, method, headers, body)=>{
+ // Resolve relative URLs (e.g. "/api/v3/users") against the spec origin so
+ // the server-side proxy always receives an absolute URL.
+ let absUrl = String(url||"");
+ if(!/^https?:\/\//i.test(absUrl)){
+  try { absUrl = new URL(absUrl, (state.specOrigin||"") + location.origin).href; } catch { absUrl = absUrl; }
+ }
+ const payload = { method, url: absUrl, headers: headers||{}, body: (method==="GET"||method==="HEAD") ? null : (body==null? "" : body) };
+ let resp;
+ try { resp = await fetch(HAMDHI_PROXY, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) }); }
+ catch(err){ throw new Error("Could not reach the Hamdhi proxy (" + (err&&err.message?err.message:"network error") + "). Is the server running?"); }
+ let data;
+ try { data = await resp.json(); }
+ catch { throw new Error("The Hamdhi proxy returned an unreadable response."); }
+ if(!resp.ok || data.error){
+  throw new Error(data.error || ("The Hamdhi proxy failed with HTTP " + resp.status + "."));
+ }
+ const hdrs = data.headers||{};
+ const rawBody = data.body==null? "" : String(data.body);
+ return {
+  status: data.status,
+  statusText: data.statusText||"",
+  ok: !!data.ok,
+  headers: { get:(k)=>{ const v=hdrs[String(k).toLowerCase()]; return v===undefined?null:v; }, forEach:(fn)=>{ Object.keys(hdrs).forEach(k=>fn(hdrs[k],k)); } },
+  text: async ()=> rawBody,
+  json: async ()=> JSON.parse(rawBody),
+ };
+};
+const executeRequest = async ()=>{
+ if(!state.selected) return;
+ const {path, method} = state.selected;
+ // Safety net: a hand-edited URL may still contain {placeholders}.
+ const url = applyPathParams(state.customUrl || buildUrl(path, method), path, method);
+ const opObj = state.resolved.paths[path];
+ const op = opObj[method.toLowerCase()];
+ const headers = {};
+ (op.parameters||[]).forEach(p=>{
+  if(p.in!=="header"&&p.in!=="cookie") return;
+  const param = resolveRefs(p, state.resolved);
+  const val = state.params[paramKey(param)];
+  if(val===undefined||val===""||val===null) return;
+  if(p.in==="header") headers[param.name]=val;
+ });
+ if(state.auth.apiKeyName&&state.auth.apiKey) headers[state.auth.apiKeyName]=state.auth.apiKey;
+ if(state.auth.basicUser) headers["Authorization"]="Basic "+btoa(state.auth.basicUser+":"+state.auth.basicPass);
+ if((state.auth.bearer||"").trim()) headers["Authorization"]="Bearer "+state.auth.bearer.trim();
+ let body = null;
+ if(op.requestBody){
+  const ta = $("#bodyText");
+  body = ta?ta.value:"";
+  const ct = op.requestBody.content||{};
+  const jsonCt = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
+  if(jsonCt) headers["Content-Type"]=jsonCt;
+ }
+ $("#executeBtn").disabled = true;
+ $("#executeBtn").textContent = "Executing…";
+ $("#responsePanel").classList.remove("show");
+ $("#resBody").textContent = "";
+ $("#resStatus").textContent = "";
+ const start = performance.now();
+ try{
+  const resp = await proxyFetch(url, method, headers, body);
+  const ct = resp.headers.get("content-type")||"";
+  let bodyText = "";
+  let errInfo = null;
+  let hints = [];
+  if(ct.includes("application/json")){
+   try{ bodyText = JSON.stringify(await resp.json(), null, 2); }
+   catch{ bodyText = await resp.text(); }
+  }
+  else if(ct.includes("html") && !resp.ok){
+   const html = await resp.text();
+   errInfo = parseServerError(html, resp.status, resp.statusText);
+   hints = errorHints(errInfo, resp.status);
+   bodyText = errInfo.type+": "+errInfo.message+(hints.length?"\n\nHow to fix:\n"+hints.map(x=>"- "+x).join("\n"):"");
+  }
+  else { bodyText = await resp.text(); }
+  if(!resp.ok && !errInfo){
+   let parsed=null; try{ parsed=JSON.parse(bodyText); }catch{}
+   let msg = parsed ? (typeof parsed==="string"?parsed:(parsed.detail||parsed.error||parsed.message||bodyText)) : bodyText;
+   if(typeof msg!=="string") msg = JSON.stringify(msg);
+   errInfo = {type: resp.status>=500?"Server Error":(resp.status+" Error"), message: String(msg).slice(0,600), location:"", raised:"", raw: bodyText.length>6000?bodyText.slice(0,6000)+"\n… (truncated)":bodyText};
+   hints = errorHints(errInfo, resp.status);
+   bodyText = errInfo.type+": "+errInfo.message+(hints.length?"\n\nHow to fix:\n"+hints.map(x=>"- "+x).join("\n"):"");
+  }
+  const statusEl = $("#resStatus");
+  statusEl.textContent = resp.status+" "+resp.statusText;
+  statusEl.className = "res-status "+(resp.status>=200&&resp.status<300?"res-ok":"res-err");
+  $("#resBody").innerHTML = errInfo ? renderErrorPanel(errInfo, hints) : highlightJson(bodyText);
+  $("#responsePanel").classList.add("show");
+  const resHeaders = {};
+  resp.headers.forEach((v,k)=>{ resHeaders[k]=v; });
+  state.lastResponse = {status: resp.status, statusText: resp.statusText, ok: resp.status>=200&&resp.status<300, body: bodyText, ms: Math.round(performance.now()-start), url, method, headers: resHeaders};
+  const curl = buildCurl(url, method, headers, body);
+  $("#copyCurl").onclick = ()=>{ navigator.clipboard.writeText(curl); $("#copyCurl").textContent="Copied!"; setTimeout(()=>$("#copyCurl").textContent="Copy cURL",1200); };
+  state.history.unshift({time:new Date().toISOString(),method,url,status:resp.status,body:bodyText});
+  if(state.history.length>50) state.history.pop();
+  localStorage.setItem("hamdhi_history", JSON.stringify(state.history));
+ }catch(err){
+  const netHints = [
+   "Could not reach the server — verify the URL and that the server is running.",
+   "If the API is on another origin, configure CORS on the server to allow this page's origin.",
+   "Check your connection, VPN, or proxy for anything blocking the request."
+  ];
+  $("#resStatus").textContent = "Network Error";
+  $("#resStatus").className = "res-status res-err";
+  $("#resBody").innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
+  $("#responsePanel").classList.add("show");
+  state.lastResponse = {status:0, statusText:"Network Error", ok:false, body:"Network Error: "+((err&&err.message)||"")+"\n\nHow to fix:\n"+netHints.map(x=>"- "+x).join("\n"), ms:Math.round(performance.now()-start), url, method, headers:{}};
+ }finally{
+  $("#executeBtn").disabled = false;
+  $("#executeBtn").textContent = "Execute (Ctrl+E)";
+ }
+};
+let selectedIndex = -1;
+const endpointEls = ()=>$$(".endpoint:not(.empty)");
+const highlight = (idx)=>{
+ const els = endpointEls();
+ els.forEach((el,i)=>el.classList.toggle("selected", i===idx));
+ if(els[idx]) els[idx].scrollIntoView({behavior:"smooth",block:"nearest"});
+};
+const openSelected = ()=>{
+ const els = endpointEls();
+ if(els[selectedIndex]){
+  const path = els[selectedIndex].querySelector(".path").textContent;
+  const method = els[selectedIndex].querySelector(".method").textContent;
+  state.selected = {path, method:method};
+  renderEndpoints();
+  renderOperation(path, method);
+ }
+};
+document.addEventListener("keydown", e=>{
+ if($("#authModal")&&!$("#authModal").classList.contains("hidden")&&e.key==="Escape"){ e.preventDefault(); $("#authModal").classList.add("hidden"); return; }
+ if(e.target.tagName==="INPUT"&&e.target.type==="text") return;
+ if(e.target.tagName==="TEXTAREA") return;
+ if(e.key==="ArrowUp"){ e.preventDefault(); selectedIndex=Math.max(0,selectedIndex-1); highlight(selectedIndex); }
+ else if(e.key==="ArrowDown"){ e.preventDefault(); const els=endpointEls(); selectedIndex=Math.min(els.length-1,selectedIndex+1); highlight(selectedIndex); }
+ else if(e.key==="Enter"){ e.preventDefault(); openSelected(); }
+ else if(e.key==="/"){ e.preventDefault(); $("#endpointSearch").focus(); }
+ else if(e.key==="Escape"){ state.selected=null; $("#opContent").innerHTML='<div class="empty">Click an endpoint on the left to view and test it.</div>'; $("#responsePanel").classList.remove("show"); selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); }
+ else if(e.ctrlKey&&e.key==="e"){ e.preventDefault(); executeRequest(); }
+});
+const SHOT = {bg:"#0d1117",panel:"#161b22",border:"#30363d",text:"#e6edf3",muted:"#8b949e",ok:"#3fb950",err:"#f85149",get:"#38bdf8",post:"#22c55e",put:"#f59e0b",patch:"#a855f7",del:"#ef4444"};
+const shotWrap = (text, maxChars)=>{
+ const out=[];
+ for(const raw of String(text==null?"":text).split("\n")){
+  let line="";
+  for(const ch of raw){ line+=ch; if(line.length>=maxChars){ out.push(line); line=""; } }
+  out.push(line);
+ }
+ return out;
+};
+const captureScreenshot = ()=>{
+ if(!state.selected||!state.resolved) return;
+ const btn = $("#shotBtn");
+ const {path, method} = state.selected;
+ const op = (state.resolved.paths[path]||{})[method.toLowerCase()]||{};
+ const url = state.customUrl || ($("#genUrl")? $("#genUrl").value : buildUrl(path, method));
+ const jwt = (state.auth.bearer||"").trim();
+ const authLine = jwt ? "Bearer "+jwt.substring(0,20)+(jwt.length>20?"…":"")+"  (active)" : "None (unauthenticated)";
+ const lr = state.lastResponse;
+ const W = 980, pad = 22, inner = W - pad*2;
+ const mono = '12px Consolas, "Courier New", monospace';
+ const monoB = 'bold 12px Consolas, "Courier New", monospace';
+ const sans = '13px system-ui, "Segoe UI", sans-serif';
+ const sansB = 'bold 13px system-ui, "Segoe UI", sans-serif';
+ const sansH = 'bold 16px system-ui, "Segoe UI", sans-serif';
+ const reqBodyText = ($("#bodyText") ? $("#bodyText").value : "") || state.body || "";
+ const urlLines = shotWrap(url, 96);
+ const reqBodyLines = reqBodyText ? shotWrap(reqBodyText, 96).slice(0,40) : [];
+ const respBodyLines = lr ? shotWrap(lr.body||"(empty)", 96).slice(0,45) : ["Not executed yet — press Execute, then screenshot to include the response."];
+ if(lr && String(lr.body||"").split("\n").length>45) respBodyLines.push("… (truncated)");
+ const mColor = {GET:SHOT.get,POST:SHOT.post,PUT:SHOT.put,PATCH:SHOT.patch,DELETE:SHOT.del}[method]||SHOT.muted;
+ const summaryLines = op.summary ? shotWrap(op.summary, 90) : [];
+ // Request parameters (path + query)
+ const reqParams = [];
+ (op.parameters||[]).forEach(p=>{
+  if(p.in!=="path"&&p.in!=="query") return;
+  const param = resolveRefs(p, state.resolved);
+  const key = paramKey(param);
+  const val = state.params[key];
+  if(val===undefined||val===""||val===null) return;
+  reqParams.push(param.in.toUpperCase()+": "+param.name+" = "+String(val));
+ });
+ const reqParamLines = reqParams.length ? shotWrap(reqParams.join("\n"), 94) : [];
+ // Request headers (content-type, auth, header/cookie params)
+ const reqHeaders = {};
+ if(op.requestBody){
+  const ct = op.requestBody.content||{};
+  const jsonCt = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
+  if(jsonCt) reqHeaders["Content-Type"]=jsonCt;
+ }
+ if(jwt) reqHeaders["Authorization"]="Bearer "+jwt;
+ (op.parameters||[]).forEach(p=>{
+  if(p.in!=="header"&&p.in!=="cookie") return;
+  const param = resolveRefs(p, state.resolved);
+  const val = state.params[paramKey(param)];
+  if(val===undefined||val===""||val===null) return;
+  if(p.in==="header") reqHeaders[param.name]=val;
+  else if(p.in==="cookie") reqHeaders["Cookie"]=(reqHeaders["Cookie"]?reqHeaders["Cookie"]+"; ":"")+param.name+"="+val;
+ });
+ const reqHeaderLines = Object.keys(reqHeaders).length ? shotWrap(Object.entries(reqHeaders).map(([k,v])=>k+": "+v).join("\n"), 94) : [];
+ // Response headers
+ const respHeaderLines = lr&&lr.headers ? shotWrap(Object.entries(lr.headers).map(([k,v])=>k+": "+v).join("\n"), 94) : [];
+ const reqPanelH = 16 + 20 + urlLines.length*17 + 20 + (reqHeaderLines.length? 20 + reqHeaderLines.length*16 + 6 : 0) + (reqParamLines.length? 20 + reqParamLines.length*16 + 6 : 0) + (reqBodyLines.length? 20 + reqBodyLines.length*16 + 6 : 0) + 16;
+ const respPanelH = 16 + 24 + (lr ? 18 : 0) + (lr&&lr.headers? 20 + respHeaderLines.length*16 : 0) + respBodyLines.length*16 + 16;
+ const H = pad + 30 + 16 + 30 + summaryLines.length*18 + 14 + reqPanelH + 14 + respPanelH + 14 + 26 + pad;
+ const dpr = window.devicePixelRatio||1;
+ const canvas = document.createElement("canvas");
+ canvas.width = W*dpr; canvas.height = H*dpr;
+ const ctx = canvas.getContext("2d");
+ ctx.scale(dpr,dpr);
+ ctx.fillStyle = SHOT.bg; ctx.fillRect(0,0,W,H);
+ const rr=(x,y,w,h,r,fill,stroke)=>{ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();} };
+ const drawJson=(text,x,y,lh)=>{
+  ctx.font = mono;
+  for(const line of text.split("\n")){
+   let cx=x; const re=/("(?:\\.|[^"\\])*"(\s*:)?|\btrue\b|\bfalse\b|\bnull\b|-?\d+\.?\d*|[{}\[\],])/g;
+   let last=0,m;
+   while((m=re.exec(line))){
+    if(m.index>last){ const s=line.slice(last,m.index); ctx.fillStyle=SHOT.text; ctx.fillText(s,cx,y); cx+=ctx.measureText(s).width; }
+    const tok=m[0]; let col=SHOT.text;
+    if(tok.endsWith(":")) col=SHOT.get; else if(tok[0]==='"') col="#a5f3fc"; else if(/^(true|false|null)$/.test(tok)) col="#c5a8ff"; else if(/^-?\d/.test(tok)) col="#f0b429"; else col="#ff7b72";
+    ctx.fillStyle=col; ctx.fillText(tok,cx,y); cx+=ctx.measureText(tok).width;
+    last=m.index+tok.length;
+   }
+   if(last<line.length){ ctx.fillStyle=SHOT.text; ctx.fillText(line.slice(last),cx,y); }
+   y+=lh;
+  }
+  return y;
+ };
+ // Header
+ ctx.font=sansH; ctx.fillStyle=SHOT.text; ctx.fillText("📸 Hamdhi — API Test Evidence", pad, pad+19);
+ ctx.font=sans; ctx.fillStyle=SHOT.muted; ctx.textAlign="right"; ctx.fillText(new Date().toLocaleString(), W-pad, pad+19); ctx.textAlign="left";
+ ctx.strokeStyle=SHOT.border; ctx.beginPath(); ctx.moveTo(pad,pad+30); ctx.lineTo(W-pad,pad+30); ctx.stroke();
+ // Endpoint badge + path
+ let y = pad+58;
+ ctx.font=monoB; const mw=ctx.measureText(method).width+18;
+ rr(pad, y-16, mw, 24, 5, mColor+"2b", mColor);
+ ctx.fillStyle=mColor; ctx.fillText(method, pad+9, y+1);
+ ctx.font=sansB; ctx.fillStyle=SHOT.text; ctx.fillText(path, pad+mw+12, y+1);
+ y+=26;
+ ctx.font=sans; ctx.fillStyle=SHOT.muted;
+ for(const l of summaryLines){ ctx.fillText(l, pad, y+8); y+=18; }
+ y+=14;
+
+$("#authBtn").onclick = ()=>{
+ $("#globalJwt").value = state.auth.bearer||"";
+ $("#authStatus").innerHTML = authStatusHtml();
+ $("#authModal").classList.remove("hidden");
+ $("#globalJwt").focus();
+};
+$("#authSave").onclick = ()=>{ applyJwt($("#globalJwt").value); $("#authModal").classList.add("hidden"); };
+$("#authCancel").onclick = ()=>{ $("#authModal").classList.add("hidden"); };
+$("#authLogout").onclick = ()=>{ applyJwt(""); $("#globalJwt").value=""; $("#authStatus").innerHTML = authStatusHtml(); };
+$("#authModal").onclick = (e)=>{ if(e.target.id==="authModal") $("#authModal").classList.add("hidden"); };
+$("#globalJwt").onkeydown = (e)=>{ if(e.key==="Enter"){ e.preventDefault(); $("#authSave").click(); } };
+ // Request panel
+ rr(pad, y, inner, reqPanelH, 6, SHOT.panel, SHOT.border);
+ let ry = y+16;
+ ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("REQUEST", pad+16, ry); ry+=20;
+ ctx.font=mono; ctx.fillStyle=SHOT.muted; ctx.fillText("URL:", pad+16, ry);
+ for(const l of urlLines){ ctx.fillStyle=SHOT.text; ctx.fillText(l, pad+56, ry); ry+=17; }
+ ry+=3;
+ ctx.font=mono; ctx.fillStyle=SHOT.muted; ctx.fillText("Auth:", pad+16, ry);
+ ctx.fillStyle=jwt?SHOT.ok:SHOT.muted; ctx.fillText(authLine, pad+60, ry); ry+=20;
+ if(reqHeaderLines.length){
+  ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("HEADERS:", pad+16, ry); ry+=20;
+  for(const l of reqHeaderLines){ ctx.fillStyle=SHOT.text; ctx.fillText(l, pad+16, ry); ry+=16; }
+ }
+ if(reqParamLines.length){
+  ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("PARAMETERS:", pad+16, ry); ry+=20;
+  for(const l of reqParamLines){ ctx.fillStyle=SHOT.text; ctx.fillText(l, pad+16, ry); ry+=16; }
+ }
+ if(reqBodyLines.length){
+  ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("BODY:", pad+16, ry); ry+=20;
+  ry = drawJson(reqBodyLines.join("\n"), pad+16, ry, 16);
+ }
+ y += reqPanelH + 14;
+ // Response panel
+ rr(pad, y, inner, respPanelH, 6, SHOT.panel, SHOT.border);
+ let sy = y+16;
+ ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("RESPONSE", pad+16, sy);
+ const stTxt = lr ? lr.status+(lr.statusText?" "+lr.statusText:"") : "not executed";
+ ctx.font=monoB; ctx.fillStyle= lr ? (lr.ok?SHOT.ok:SHOT.err) : SHOT.muted;
+ ctx.textAlign="right"; ctx.fillText(stTxt, W-pad-16, sy); ctx.textAlign="left";
+ sy+=24;
+ if(lr){ ctx.font=mono; ctx.fillStyle=SHOT.muted; ctx.fillText(lr.ms+" ms", pad+16, sy); sy+=18; }
+ if(lr&&lr.headers){
+  ctx.font=monoB; ctx.fillStyle=SHOT.muted; ctx.fillText("HEADERS:", pad+16, sy); sy+=20;
+  for(const l of respHeaderLines){ ctx.fillStyle=SHOT.text; ctx.fillText(l, pad+16, sy); sy+=16; }
+ }
+ sy = drawJson(respBodyLines.join("\n"), pad+16, sy, 16);
+ y += respPanelH + 14;
+ // Footer
+ ctx.font='11px system-ui, "Segoe UI", sans-serif'; ctx.fillStyle=SHOT.muted;
+ ctx.fillText("Generated by Hamdhi — OpenAPI UI   •   "+(location.host||"local file"), pad, y+14);
+ // Download PNG
+ canvas.toBlob(blob=>{
+  const a=document.createElement("a");
+  const fname="hamdhi_"+method.toLowerCase()+"_"+path.replace(/[^a-z0-9]+/gi,"_").replace(/^_|_$/g,"")+"_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";
+  a.href=URL.createObjectURL(blob);
+  a.download=fname;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  if(btn){ btn.textContent="✓ Saved"; setTimeout(()=>btn.textContent="📸 Screenshot",1500); }
+ });
+};
+$("#executeBtn").onclick = executeRequest;
+$("#shotBtn").onclick = captureScreenshot;
+$("#fetchBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; try{localStorage.setItem("hamdhi_openapi_url", url);}catch{} await fetchSpec(url); } else { await fetchSpec(""); } };
+$("#refreshBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; await fetchSpec(url); } else { await fetchSpec(""); } };
+$("#specFile").onchange = (e)=>{
+ const file = e.target.files[0];
+ if(!file) return;
+ $("#fileStatus").textContent = "Reading…";
+ $("#fileStatus").style.color = "var(--muted)";
+ const reader = new FileReader();
+ reader.onload = (ev)=>loadSpecFromText(ev.target.result, file.name);
+ reader.onerror = ()=>{ $("#fileStatus").textContent = "Error reading file"; $("#fileStatus").style.color = "var(--danger)"; };
+ reader.readAsText(file);
+};
+document.addEventListener('click', e=>{
+ const pill = e.target.closest('label.pill[data-param]');
+ if(!pill) return;
+ const key = pill.dataset.param;
+ const val = pill.dataset.val;
+ if(pill.parentElement){ pill.parentElement.querySelectorAll('label.pill').forEach(p=>{ if(p.dataset.param===key) p.classList.remove('active'); }); }
+ pill.classList.add('active');
+ state.params[key] = val;
+ const input = pill.querySelector('input');
+ if(input) input.checked = true;
+ refreshUrlPreview();
+});
+const THEMES = ["dark","light","theme-orange","theme-red","theme-blue","theme-purple","theme-green","theme-pink","theme-matte-dark","theme-matte-light","theme-matte-gray","theme-matte-sepia","theme-matte-monokai","theme-matte-solarized"];
+const THEME_LABELS = {"dark":"Dark","light":"Light","theme-orange":"Orange","theme-red":"Red","theme-blue":"Blue","theme-purple":"Purple","theme-green":"Green","theme-pink":"Pink","theme-matte-dark":"Matte Dark","theme-matte-light":"Matte Light","theme-matte-gray":"Matte Gray","theme-matte-sepia":"Matte Sepia","theme-matte-monokai":"Matte Monokai","theme-matte-solarized":"Matte Solarized"};
+let themeIdx = 0;
+const setTheme = (themeName)=>{
+ if(!THEMES.includes(themeName)) themeName = "dark";
+ document.body.className = themeName;
+ $("#themeSelect").value = themeName;
+ localStorage.setItem("hamdhi_theme", themeName);
+};
+$("#themeSelect").onchange = (e)=>{ setTheme(e.target.value); };
+$("#endpointSearch").oninput = (e)=>{ state.search = e.target.value; renderEndpoints(); selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); };
+// WEB BUILD STARTUP — the user pastes an OpenAPI URL, we load it.
+// No blind auto-discovery here: on the web there is no "same origin API" to
+// guess, so we show a friendly landing screen instead.
+document.addEventListener("DOMContentLoaded", async ()=>{
+ const savedTheme = localStorage.getItem("hamdhi_theme");
+ if(savedTheme&&THEMES.includes(savedTheme)){ setTheme(savedTheme); }
+ updateAuthBtn();
+ const input = $("#openapiUrl");
+ if(input.value.trim()==="__HAMDHI_OPENAPI_URL__") input.value = "";
+ const saved = normSpecUrl(tryStoredSpecUrl());
+ if(saved) input.value = saved;
+ const showLanding = (msg)=>{
+  $("#specInfo").textContent = "No spec loaded";
+  $("#opContent").innerHTML = `<div class="empty" style="flex-direction:column;gap:10px">
+   <div style="font-size:20px;font-weight:700">Paste your OpenAPI URL to get started</div>
+   <div style="max-width:520px;text-align:center;line-height:1.6">${msg||"Point Hamdhi at any OpenAPI 3 JSON or YAML document and every endpoint becomes instantly testable. Requests go through a server-side proxy, so APIs without CORS still work."}</div>
+   <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+    <input type="text" inputmode="url" autocomplete="off" spellcheck="false" id="landingUrl" placeholder="https://api.example.com/openapi.json" style="min-width:320px" value="${escHtml(saved||"")}">
+    <button class="btn primary" id="landingLoad">Load</button>
+   </div>
+   <div style="font-size:11px;color:var(--muted);margin-top:4px">Supports OpenAPI 3.x / Swagger 2.0 — JSON or YAML.</div>
+  </div>`;
+  const lu = $("#landingUrl"); const ll = $("#landingLoad");
+  if(!lu||!ll) return;
+  const go = async ()=>{
+   const v = lu.value.trim();
+   if(!v){ lu.focus(); return; }
+   input.value = v;
+   const ok = await fetchSpec(v);
+   if(!ok) showLanding("<span style='color:var(--danger)'>Could not load that URL — check it opens to an OpenAPI document, then try again.</span>");
+  };
+  ll.onclick = go;
+  lu.onkeydown = (e)=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } };
+  setTimeout(()=>lu.focus(), 50);
+ };
+ // A ?url=... query parameter loads straight away (great for sharing links).
+ const qUrl = new URLSearchParams(location.search).get("url");
+ if(qUrl){ input.value = qUrl; await fetchSpec(qUrl); return; }
+ if(saved){
+  const ok = await fetchSpec(saved);
+  if(ok) return;
+ }
+ showLanding();
+});
+</script>
+</body>
+</html>
