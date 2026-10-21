@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Syntax-check the app
+        run: node --check server.js && node --check api/spec.js && node --check api/proxy.js
+
+      - name: Start the server and check /api/health
+        run: |
+          node server.js &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "server did not start" && exit 1
+
+      - name: Fetch a public OpenAPI spec through /api/spec
+        run: |
+          curl -fsS "http://127.0.0.1:3000/api/spec?url=https://petstore3.swagger.io/api/v3/openapi.json" \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);if(!j.spec||!j.spec.paths)throw new Error('no spec');console.log('spec OK:',j.spec.info.title,'paths:',Object.keys(j.spec.paths).length);});"
+
+      - name: Call a public API through /api/proxy
+        run: |
+          curl -fsS -X POST http://127.0.0.1:3000/api/proxy \
+            -H "Content-Type: application/json" \
+            -d '{"method":"GET","url":"https://petstore3.swagger.io/api/v3/pet/1"}' \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);if(j.status!==200)throw new Error('proxy status '+j.status);console.log('proxy OK:',j.status,j.body.slice(0,60));});"
