@@ -147,8 +147,8 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
 .pill input{display:none}
 .enum-title{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
 .textarea{width:100%;min-height:140px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.5;resize:vertical}
-.execute-bar{padding:12px 14px;border-top:1px solid var(--border);background:var(--panel);display:flex;gap:10px;align-items:center}
-.response{flex:0 0 auto;min-height:140px;max-height:45vh;overflow:auto;border-top:1px solid var(--border);background:var(--surface);display:none;padding:12px 14px}
+.execute-bar{flex:0 0 auto;flex-shrink:0;padding:12px 14px;border-top:1px solid var(--border);background:var(--panel);display:flex;gap:10px;align-items:center}
+.response{flex:0 0 auto;flex-shrink:0;min-height:140px;max-height:45vh;overflow:auto;border-top:1px solid var(--border);background:var(--surface);display:none;padding:12px 14px}
 .response.show{display:block}
 .response h5{font-size:12px;margin-bottom:6px;color:var(--muted)}
 .res-status{font-size:12px;font-weight:700;margin-bottom:8px}
@@ -260,7 +260,7 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
     <div class="execute-bar">
      <button class="btn primary" id="executeBtn" disabled>Execute (Ctrl+E)</button>
      <button class="btn" id="shotBtn" title="Save evidence screenshot (PNG)">Screenshot</button>
-     <span class="help" id="helpText">&#8593;/&#8595; browse &#8226; Enter open &#8226; / search &#8226; Esc back</span>
+     <span class="help" id="helpText">&#8593;/&#8595; browse &#8226; Enter open &#8226; / search &#8226; Esc back &#8226; Ctrl+E execute</span>
     </div>
     <div class="response" id="responsePanel">
      <h5>Response</h5>
@@ -277,11 +277,11 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
     </header>
     <div class="content no-tab" id="opContent2">Pick an endpoint for the right pane.</div>
     <div class="execute-bar" id="executeBar2" style="display:none">
-     <button class="btn primary" id="executeBtn2" disabled>Execute</button>
+     <button class="btn primary" id="executeBtn2" disabled>Execute (Ctrl+Shift+E)</button>
      <button class="btn" id="shotBtn2" title="Save evidence screenshot (PNG)">Screenshot</button>
-     <span class="help">Right pane</span>
+     <span class="help">Right pane &middot; Ctrl+Shift+E</span>
     </div>
-    <div class="response" id="responsePanel2" style="display:none">
+    <div class="response" id="responsePanel2">
      <h5>Response</h5>
      <div class="res-status" id="resStatus2"></div>
      <div class="copy" id="copyCurl2" title="Copy cURL">Copy cURL</div>
@@ -960,10 +960,13 @@ const renderOperation = (path, method, pane)=>{
  lc.appendChild(lcContent);
  content.appendChild(lc);
  const executeBtn = P$("#executeBtn"); if(executeBtn) executeBtn.disabled = false;
+ const executeBtnOther = document.querySelector("#executeBtn"+(pane==="2"?"":"2"));
+ if(executeBtnOther) executeBtnOther.disabled = false;
  const respPanel = P$("#responsePanel");
  const resBody = P$("#resBody");
  const resStatus = P$("#resStatus");
- if(state.lastResponse){ resStatus.textContent=state.lastResponse.status+" "+state.lastResponse.statusText; resStatus.className="res-status "+(state.lastResponse.ok?"res-ok":"res-err"); resBody.innerHTML=highlightJson(state.lastResponse.body||""); respPanel.classList.add("show"); }else{ respPanel.classList.remove("show"); resBody.textContent=""; resStatus.textContent=""; }
+ const paneResp = (curTab && curTab.lastResponse) ? curTab.lastResponse : null;
+ if(paneResp){ resStatus.textContent=paneResp.status+" "+paneResp.statusText; resStatus.className="res-status "+(paneResp.ok?"res-ok":"res-err"); resBody.innerHTML=highlightJson(paneResp.body||""); respPanel.classList.add("show"); respPanel.style.display = "block"; }else{ respPanel.classList.remove("show"); respPanel.style.display = ""; resBody.textContent=""; resStatus.textContent=""; }
 };
 // Substitute {paramName} placeholders in a URL with the values the user entered
 // for path parameters. Returns the URL unchanged when there is nothing to do.
@@ -1104,15 +1107,17 @@ const proxyFetch = async (url, method, headers, body)=>{
 const executeRequest = async (pane)=>{
  pane = pane || "1";
  const suf = (pane==="2" ? "2" : "");
- const P$ = (id)=>document.querySelector(id+suf);
- const tab = (pane==="2") ? getSplitTab() : getActiveTab();
- const sel = tab ? {path:tab.path, method:tab.method} : state.selected;
- if(!sel) return;
- const {path, method} = sel;
- // Safety net: a hand-edited URL may still contain {placeholders}.
- const url = applyPathParams(state.customUrl || buildUrl(path, method), path, method);
- const opObj = state.resolved.paths[path];
- const op = opObj[method.toLowerCase()];
+ // Make this pane the owner of the working state, then pull its tab's data in.
+ activatePane(pane);
+ const tab = getPaneTab(pane);
+ if(!tab) return;
+ const {path, method} = {path:tab.path, method:tab.method};
+ const opObj = (state.resolved.paths||{})[path]||{};
+ const op = opObj[method.toLowerCase()]||{};
+ // URL: prefer what is literally typed in this pane's URL box.
+ const gu = document.querySelector("#genUrl"+suf);
+ const rawUrl = (gu && gu.value) ? gu.value : (state.customUrl || buildUrl(path, method));
+ const url = applyPathParams(rawUrl, path, method);
  const headers = {};
  (op.parameters||[]).forEach(p=>{
   if(p.in!=="header"&&p.in!=="cookie") return;
@@ -1126,20 +1131,20 @@ const executeRequest = async (pane)=>{
  if((state.auth.bearer||"").trim()) headers["Authorization"]="Bearer "+state.auth.bearer.trim();
  let body = null;
  if(op.requestBody){
-  const ta = P$("#bodyText");
-  body = ta?ta.value:"";
+  const ta = document.querySelector("#bodyText"+suf);
+  body = (ta && ta.value!==undefined) ? ta.value : (tab.body||"");
   const ct = op.requestBody.content||{};
   const jsonCt = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
   if(jsonCt) headers["Content-Type"]=jsonCt;
  }
- const execBtn = P$("#executeBtn");
- if(execBtn){ execBtn.disabled = true; execBtn.textContent = "Executing…"; }
- const rp = P$("#responsePanel");
- const rb = P$("#resBody");
- const rs = P$("#resStatus");
- rp.classList.remove("show");
- rb.textContent = "";
- rs.textContent = "";
+ const execBtn = document.querySelector("#executeBtn"+suf);
+ if(execBtn){ execBtn.disabled = true; execBtn.textContent = "Executing\u2026"; }
+ const rp = document.querySelector("#responsePanel"+suf);
+ const rb = document.querySelector("#resBody"+suf);
+ const rs = document.querySelector("#resStatus"+suf);
+ if(rp) rp.classList.remove("show");
+ if(rb) rb.textContent = "";
+ if(rs) rs.textContent = "";
  const start = performance.now();
  try{
   const resp = await proxyFetch(url, method, headers, body);
@@ -1162,39 +1167,49 @@ const executeRequest = async (pane)=>{
    let parsed=null; try{ parsed=JSON.parse(bodyText); }catch{}
    let msg = parsed ? (typeof parsed==="string"?parsed:(parsed.detail||parsed.error||parsed.message||bodyText)) : bodyText;
    if(typeof msg!=="string") msg = JSON.stringify(msg);
-   errInfo = {type: resp.status>=500?"Server Error":(resp.status+" Error"), message: String(msg).slice(0,600), location:"", raised:"", raw: bodyText.length>6000?bodyText.slice(0,6000)+"\n… (truncated)":bodyText};
+   errInfo = {type: resp.status>=500?"Server Error":(resp.status+" Error"), message: String(msg).slice(0,600), location:"", raised:"", raw: bodyText.length>6000?bodyText.slice(0,6000)+"\n (truncated)":bodyText};
    hints = errorHints(errInfo, resp.status);
    bodyText = errInfo.type+": "+errInfo.message+(hints.length?"\n\nHow to fix:\n"+hints.map(x=>"- "+x).join("\n"):"");
   }
-  const statusEl = rs;
-  statusEl.textContent = resp.status+" "+resp.statusText;
-  statusEl.className = "res-status "+(resp.status>=200&&resp.status<300?"res-ok":"res-err");
-  rb.innerHTML = errInfo ? renderErrorPanel(errInfo, hints) : highlightJson(bodyText);
-  rp.classList.add("show");
+  if(rs){
+   rs.textContent = resp.status+" "+resp.statusText;
+   rs.className = "res-status "+(resp.status>=200&&resp.status<300?"res-ok":"res-err");
+  }
+  if(rb) rb.innerHTML = errInfo ? renderErrorPanel(errInfo, hints) : highlightJson(bodyText);
+  if(rp){ rp.classList.add("show"); rp.style.display = "block"; }
   const resHeaders = {};
   resp.headers.forEach((v,k)=>{ resHeaders[k]=v; });
   state.lastResponse = {status: resp.status, statusText: resp.statusText, ok: resp.status>=200&&resp.status<300, body: bodyText, ms: Math.round(performance.now()-start), url, method, headers: resHeaders};
   const curl = buildCurl(url, method, headers, body);
-  const cc = P$("#copyCurl");
+  const cc = document.querySelector("#copyCurl"+suf);
   if(cc){ cc.onclick = ()=>{ navigator.clipboard.writeText(curl); cc.textContent="Copied!"; setTimeout(()=>cc.textContent="Copy cURL",1200); }; }
-  if(tab){ tab.lastResponse = state.lastResponse; tab.body = state.body; tab.customUrl = state.customUrl; tab.urlTouched = state.urlTouched; tab.params = state.params; }
+  // Persist onto THIS pane's tab only.
+  tab.lastResponse = state.lastResponse;
+  tab.body = body||"";
+  tab.customUrl = rawUrl;
+  tab.urlTouched = true;
+  tab.params = state.params;
   state.history.unshift({time:new Date().toISOString(),method,url,status:resp.status,body:bodyText});
   if(state.history.length>50) state.history.pop();
   localStorage.setItem("hamdhi_history", JSON.stringify(state.history));
  }catch(err){
   const netHints = [
-   "Could not reach the server — verify the URL and that the server is running.",
+   "Could not reach the server - verify the URL and that the server is running.",
    "If the API is on another origin, configure CORS on the server to allow this page's origin.",
    "Check your connection, VPN, or proxy for anything blocking the request."
   ];
-  rs.textContent = "Network Error";
-  rs.className = "res-status res-err";
-  rb.innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
-  rp.classList.add("show");
+  if(rs){ rs.textContent = "Network Error"; rs.className = "res-status res-err"; }
+  if(rb) rb.innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
+  if(rp){ rp.classList.add("show"); rp.style.display = "block"; }
   state.lastResponse = {status:0, statusText:"Network Error", ok:false, body:"Network Error: "+((err&&err.message)||"")+"\n\nHow to fix:\n"+netHints.map(x=>"- "+x).join("\n"), ms:Math.round(performance.now()-start), url, method, headers:{}};
-  if(tab){ tab.lastResponse = state.lastResponse; tab.body = state.body; tab.customUrl = state.customUrl; tab.urlTouched = state.urlTouched; tab.params = state.params; }
+  tab.lastResponse = state.lastResponse;
+  tab.body = body||"";
+  tab.customUrl = rawUrl;
+  tab.urlTouched = true;
+  tab.params = state.params;
  }finally{
-  if(execBtn){ execBtn.disabled = false; execBtn.textContent = (pane==="2" ? "Execute" : "Execute (Ctrl+E)"); }
+  if(execBtn){ execBtn.disabled = false; execBtn.textContent = (pane==="2" ? "Execute (Ctrl+Shift+E)" : "Execute (Ctrl+E)"); }
+  renderTabs();
  }
 };
 let selectedIndex = -1;
@@ -1220,8 +1235,9 @@ document.addEventListener("keydown", e=>{
  else if(e.key==="ArrowDown"){ e.preventDefault(); const els=endpointEls(); selectedIndex=Math.min(els.length-1,selectedIndex+1); highlight(selectedIndex); }
  else if(e.key==="Enter"){ e.preventDefault(); openSelected(); }
  else if(e.key==="/"){ e.preventDefault(); $("#endpointSearch").focus(); }
- else if(e.key==="Escape"){ state.selected=null; state.activeTabId=null; state.splitTabId=null; renderTabs(); updateSplitUI(); $("#opContent").innerHTML='<div class="empty">Click an endpoint on the left to view and test it.</div>'; $("#responsePanel").classList.remove("show"); selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); }
- else if(e.ctrlKey&&e.key==="e"){ e.preventDefault(); executeRequest(state.splitView && state.__focus2 ? "2" : "1"); }
+ else if(e.key==="Escape"){ state.selected=null; state.activeTabId=null; state.splitTabId=null; renderTabs(); updateSplitUI(); $("#opContent").innerHTML='<div class="empty">Click an endpoint on the left to view and test it.</div>'; $("#responsePanel").classList.remove("show"); $("#responsePanel").style.display = ""; selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); }
+ else if(e.ctrlKey&&e.shiftKey&&(e.key==="e"||e.key==="E")){ e.preventDefault(); if(state.splitView) executeRequest("2"); }
+  else if(e.ctrlKey&&(e.key==="e"||e.key==="E")){ e.preventDefault(); executeRequest("1"); }
 });
 const SHOT = {bg:"#0d1117",panel:"#161b22",border:"#30363d",text:"#e6edf3",muted:"#8b949e",ok:"#3fb950",err:"#f85149",get:"#38bdf8",post:"#22c55e",put:"#f59e0b",patch:"#a855f7",del:"#ef4444"};
 const shotWrap = (text, maxChars)=>{
@@ -1525,6 +1541,7 @@ const openSplitTab = (path, method)=>{
  renderOperation(path, m, "2");
  updateSplitUI();
  const eb = document.querySelector("#executeBar2"); if(eb) eb.style.display = "flex";
+ const eb2btn = document.querySelector("#executeBtn2"); if(eb2btn) eb2btn.disabled = false;
 };
 const closeTab = (id)=>{
  const idx = state.tabs.findIndex(t=>t.id===id);
@@ -1546,7 +1563,7 @@ const closeTab = (id)=>{
   const c = document.querySelector("#opContent");
   if(c) c.innerHTML = '<div class="empty">Click an endpoint on the left to view and test it.</div>';
   const rp = document.querySelector("#responsePanel");
-  if(rp) rp.classList.remove("show");
+  if(rp){ rp.classList.remove("show"); rp.style.display = ""; }
  }
  if(state.splitView){
   const sp = getSplitTab();
@@ -1557,14 +1574,14 @@ const closeTab = (id)=>{
    const eb = document.querySelector("#executeBar2");
    if(eb) eb.style.display = "none";
    const rp2 = document.querySelector("#responsePanel2");
-   if(rp2) rp2.classList.remove("show");
+   if(rp2){ rp2.classList.remove("show"); rp2.style.display = ""; }
   }
  }
  updateSplitUI();
 };
 const updateSplitUI = ()=>{
  const on = !!state.splitView;
- if(!on){ state.splitTabId = null; const e2=document.querySelector("#executeBar2"); if(e2) e2.style.display="none"; const r2=document.querySelector("#responsePanel2"); if(r2) r2.classList.remove("show"); }
+ if(!on){ state.splitTabId = null; const e2=document.querySelector("#executeBar2"); if(e2) e2.style.display="none"; const r2=document.querySelector("#responsePanel2"); if(r2){ r2.classList.remove("show"); r2.style.display = ""; } }
  const cs = document.querySelector("#closeSplit2"); if(cs) cs.style.display = on ? "inline-flex" : "none";
  document.querySelectorAll(".btn-split").forEach(b=>{ b.classList.toggle("on", on && b.dataset.path+"\u007c"+String(b.dataset.method).toUpperCase()===state.splitTabId); });
  const eb2 = document.querySelector("#executeBar2");
@@ -1572,7 +1589,7 @@ const updateSplitUI = ()=>{
  const c2 = document.querySelector("#opContent2");
  const spTab = getSplitTab();
  if(eb2) eb2.style.display = (on && spTab) ? "flex" : "none";
- if(rp2 && !spTab) rp2.classList.remove("show");
+ if(rp2 && !spTab){ rp2.classList.remove("show"); rp2.style.display = ""; }
  if(c2 && !spTab){ c2.className = "content no-tab"; c2.textContent = "Pick an endpoint for the right pane."; }
  const p2 = document.querySelector("#pane2");
  if(p2) p2.classList.toggle("hidden", !on);
