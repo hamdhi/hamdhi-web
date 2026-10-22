@@ -59,7 +59,11 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
 .btn.primary:hover{background:#7dd3fc}
 .btn.danger{background:var(--danger);color:#fff}
 .btn.small{padding:4px 8px;font-size:11px}
-.btn-exec{margin-left:auto;padding:3px 7px;font-size:11px;opacity:0.6;border:1px solid var(--border);background:var(--surface)}
+.btn-exec{margin-left:0;padding:3px 7px;font-size:11px;opacity:0.6;border:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.btn-split{margin-left:auto;padding:3px 7px;font-size:12px;line-height:1;opacity:.55;border:1px solid var(--border);background:var(--surface);color:var(--text);flex-shrink:0}
+.btn-split:hover{opacity:1;border-color:var(--accent);color:var(--accent)}
+.btn-split.on{opacity:1;border-color:var(--accent);background:var(--accent);color:#001623;font-weight:700}
+.endpoint:hover .btn-split{opacity:1}
 .btn-exec:hover{opacity:1;border-color:var(--accent);color:var(--accent)}
 .endpoint:hover .btn-exec{opacity:1}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;border:1px solid}
@@ -92,7 +96,7 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
 .endpoint.m-delete .method{color:var(--del)}
 .endpoint.m-patch .method{color:var(--patch)}
 .endpoint .path{flex:1;font-size:12.5px;font-weight:600}
-.endpoint .summary{font-size:11.5px;color:var(--muted);margin-left:8px}
+.endpoint .summary{font-size:11.5px;color:var(--muted);margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .endpoint.selected{border-color:var(--accent);background:rgba(56,189,248,.15);box-shadow:inset 3px 0 0 var(--accent)}
 .endpoint.selected .path{color:var(--accent);font-weight:700}
 .method-group{width:100%;border-top:1px solid var(--border);margin-top:8px;padding-top:6px}
@@ -215,7 +219,6 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
     <option value="theme-matte-monokai">Matte Monokai</option>
     <option value="theme-matte-solarized">Matte Solarized</option>
   </select>
-  <button class="btn split-btn" id="splitBtn" title="Split view - show 2 tabs side by side">Split View</button>
  </div>
 </div>
 <div class="auth-modal hidden" id="authModal">
@@ -270,15 +273,18 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
     <header>
      <h3 id="opTitle2">Split view</h3>
      <div class="split-hint" id="splitHint2">Right pane</div>
+     <button class="btn small" id="closeSplit2" title="Close the right split pane">&times;</button>
     </header>
     <div class="content no-tab" id="opContent2">Pick an endpoint for the right pane.</div>
     <div class="execute-bar" id="executeBar2" style="display:none">
      <button class="btn primary" id="executeBtn2" disabled>Execute</button>
+     <button class="btn" id="shotBtn2" title="Save evidence screenshot (PNG)">Screenshot</button>
      <span class="help">Right pane</span>
     </div>
     <div class="response" id="responsePanel2" style="display:none">
      <h5>Response</h5>
      <div class="res-status" id="resStatus2"></div>
+     <div class="copy" id="copyCurl2" title="Copy cURL">Copy cURL</div>
      <div class="res-body" id="resBody2"></div>
     </div>
    </div>
@@ -370,6 +376,7 @@ const state = {
  activeTabId: null,
  splitView: false,
  splitTabId: null,
+ pane: "1",
  selected: null,
  tags: [],
  activeTag: "All",
@@ -689,8 +696,8 @@ const renderEndpoints = ()=>{
    const el = document.createElement("div");
    el.className = "endpoint "+methodCls(method)+(op.deprecated?" deprecated":"")+(state.selected&&state.selected.path===path&&state.selected.method===method.toUpperCase()?" selected":"");
    const showExec = !["POST","PUT","PATCH","DELETE"].includes(method);
-   el.innerHTML = `<span class="method ${methodCls(method)}">${method}</span><span class="path">${escHtml(path)}</span><span class="summary">${escHtml(op.summary||"")}</span>${showExec?`<button class="btn-exec" title="Execute">▶</button>`:""}`;
-   el.onclick = (e)=>{ if(e.target.classList.contains("btn-exec")){ e.stopPropagation(); openEndpoint(path, method); executeRequest(); } else if(e.ctrlKey||e.metaKey||e.shiftKey){ e.preventDefault(); openSplitTab(path, method); } else { openEndpoint(path, method); } };
+   el.innerHTML = `<span class="method ${methodCls(method)}">${method}</span><span class="path">${escHtml(path)}</span><span class="summary">${escHtml(op.summary||"")}</span>${showExec?`<button class="btn-exec" title="Execute">▶</button>`:""}<button class="btn-split" data-path="${escHtml(path)}" data-method="${escHtml(method)}" title="Open in right split pane">&#11041;</button>`;
+   el.onclick = (e)=>{ if(e.target.closest(".btn-split")){ e.stopPropagation(); e.preventDefault(); openSplitTab(path, method); return; } if(e.target.closest(".btn-exec")){ e.stopPropagation(); openEndpoint(path, method); executeRequest("1"); } else if(e.ctrlKey||e.metaKey||e.shiftKey){ e.preventDefault(); openSplitTab(path, method); } else { openEndpoint(path, method); } };
    group.appendChild(el);
    total++;
   });
@@ -738,7 +745,7 @@ const createParamUI = (p, path)=>{
   div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0"><label class="pill${sel===true?" active":""}" data-param="${escHtml(key)}" data-val="true"><input type="radio" name="param_${key}" value="true"${sel===true?" checked":""}>true</label><label class="pill${sel===false?" active":""}" data-param="${escHtml(key)}" data-val="false"><input type="radio" name="param_${key}" value="false"${sel===false?" checked":""}>false</label><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
  }else{
   const placeholder = schema.format==="date-time"?"2026-10-19T00:00:00Z":(schema.format==="date"?"2026-10-19":(schema.format==="email"?"name@example.com":(schema.format==="uuid"?"550e8400-e29b-41d4-a716-446655440000":(schema.example!==undefined?String(schema.example):(schema.type==="number"||schema.type==="integer")?0:""))));
-  div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0"><input type="text" name="param_${key}" value="${escHtml(String(curVal))}" placeholder="${placeholder}"${required?" required":""} onchange="state.params['${key}']=this.value; refreshUrlPreview()"><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
+  div.innerHTML = `<label>${escHtml(name)}${required?' <span class="badge req" style="padding:1px 6px">required</span>':`<span class="badge opt" style="padding:1px 6px">optional</span>`}</label><div style="flex:1;min-width:0"><input type="text" name="param_${key}" value="${escHtml(String(curVal))}" placeholder="${placeholder}"${required?" required":""} onchange="setParam('${key}', this.value, '"+suf+"')"><div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(param.description||"")}</div></div>`;
  }
  return div;
 };
@@ -908,9 +915,8 @@ const renderOperation = (path, method, pane)=>{
  content.appendChild(curlSec);
  // Update cURL when URL changes
  genUrl.oninput = (e)=>{ 
-  state.customUrl = e.target.value;
-  state.urlTouched = true;
-  curlPre.textContent = buildCurl(state.customUrl, method, authHeaders(), state.body||"");
+   setUrl(e.target.value, pane);
+   curlPre.textContent = buildCurl(state.customUrl, method, authHeaders(), state.body||"");
  };
  curlCopyBtn.onclick = ()=>{ navigator.clipboard.writeText(curlPre.textContent); curlCopyBtn.textContent="Copied!"; setTimeout(()=>curlCopyBtn.textContent="Copy cURL",1200); };
  // Learning Center
@@ -999,13 +1005,17 @@ const buildUrl = (path, method)=>{
 };
 // Rebuild the Request URL + cURL preview when parameter values change.
 // If the user typed into the URL box we never overwrite it (urlTouched).
-const refreshUrlPreview = ()=>{
- if(!state.selected) return;
- if(state.urlTouched){ refreshCurlIfOpen(); return; }
- const {path, method} = state.selected;
- const genUrl = document.querySelector("#genUrl");
+const refreshUrlPreview = (pane)=>{
+ pane = pane || "1";
+ const suf = (pane==="2" ? "2" : "");
+ const t = getPaneTab(pane);
+ const sel = t ? {path:t.path, method:t.method} : state.selected;
+ if(!sel) return;
+ const {path, method} = sel;
+ const genUrl = document.querySelector("#genUrl"+suf);
+ if(state.urlTouched){ refreshCurlIfOpen(pane); return; }
  if(genUrl) genUrl.value = state.customUrl || buildUrl(path, method);
- refreshCurlIfOpen();
+ refreshCurlIfOpen(pane);
 };
 const buildCurl = (url, method, headers, body)=>{
  let cmd = "curl -X "+method+" '"+url+"'";
@@ -1182,6 +1192,7 @@ const executeRequest = async (pane)=>{
   rb.innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
   rp.classList.add("show");
   state.lastResponse = {status:0, statusText:"Network Error", ok:false, body:"Network Error: "+((err&&err.message)||"")+"\n\nHow to fix:\n"+netHints.map(x=>"- "+x).join("\n"), ms:Math.round(performance.now()-start), url, method, headers:{}};
+  if(tab){ tab.lastResponse = state.lastResponse; tab.body = state.body; tab.customUrl = state.customUrl; tab.urlTouched = state.urlTouched; tab.params = state.params; }
  }finally{
   if(execBtn){ execBtn.disabled = false; execBtn.textContent = (pane==="2" ? "Execute" : "Execute (Ctrl+E)"); }
  }
@@ -1231,10 +1242,10 @@ const captureScreenshot = (pane)=>{
  const {path, method} = {path:shTab.path, method:shTab.method};
  const op = (state.resolved.paths[path]||{})[method.toLowerCase()]||{};
  const gu = document.querySelector("#genUrl"+suf);
- const url = shTab.customUrl || (gu? gu.value : buildUrl(path, method));
+ const url = (gu && gu.value) ? gu.value : (shTab.customUrl || buildUrl(path, method));
  const jwt = (state.auth.bearer||"").trim();
  const authLine = jwt ? "Bearer "+jwt.substring(0,20)+(jwt.length>20?"…":"")+"  (active)" : "None (unauthenticated)";
- const lr = state.lastResponse;
+ const lr = shTab.lastResponse;
  const W = 980, pad = 22, inner = W - pad*2;
  const mono = '12px Consolas, "Courier New", monospace';
  const monoB = 'bold 12px Consolas, "Courier New", monospace';
@@ -1380,8 +1391,51 @@ $("#globalJwt").onkeydown = (e)=>{ if(e.key==="Enter"){ e.preventDefault(); $("#
   a.download=fname;
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-  if(btn){ btn.textContent="✓ Saved"; setTimeout(()=>btn.textContent="📸 Screenshot",1500); }
+  if(btn){ btn.textContent="✓ Saved"; setTimeout(()=>btn.textContent="Screenshot",1500); }
  });
+};
+// ---------------- Pane-aware working state ----------------
+// state.params / state.body / state.customUrl / state.lastResponse always belong
+// to whichever pane currently owns the working state (state.pane).
+// Each tab keeps its own copy; switching panes saves one and restores the other.
+const getPaneTab = (pane)=> (pane==="2") ? getSplitTab() : getActiveTab();
+const syncTab = (pane)=>{
+ const t = getPaneTab(pane);
+ if(!t) return;
+ t.params = state.params;
+ t.customUrl = state.customUrl;
+ t.urlTouched = state.urlTouched;
+ t.body = state.body;
+ t.lastResponse = state.lastResponse;
+ t.selectedServer = state.selectedServer;
+};
+const activatePane = (pane)=>{
+ pane = pane || "1";
+ if(state.pane===pane) return;
+ syncTab(state.pane);
+ state.pane = pane;
+ const t = getPaneTab(pane);
+ if(t) loadTab(t);
+};
+const setParam = (key, val, pane)=>{
+ pane = pane || "1";
+ activatePane(pane);
+ state.params[key] = val;
+ refreshUrlPreview(pane);
+ syncTab(pane);
+};
+const setUrl = (val, pane)=>{
+ pane = pane || "1";
+ activatePane(pane);
+ state.customUrl = val;
+ state.urlTouched = true;
+ syncTab(pane);
+};
+const setBody = (val, pane)=>{
+ pane = pane || "1";
+ activatePane(pane);
+ state.body = val;
+ syncTab(pane);
 };
 // ---------------- Tabs + split view ----------------
 const tabKey = (path, method)=> path+"|"+method.toUpperCase();
@@ -1445,11 +1499,12 @@ const renderTabs = ()=>{
 const openEndpoint = (path, method)=>{
  const m = method.toUpperCase();
  const id = tabKey(path, m);
- saveTab(getActiveTab());
+ syncTab(state.pane);
  let tab = state.tabs.find(t=>t.id===id);
  if(!tab){ tab = makeTab(path, m); state.tabs.push(tab); }
  state.activeTabId = id;
  state.selected = {path:path, method:m};
+ state.pane = "1";
  loadTab(tab);
  renderEndpoints();
  renderTabs();
@@ -1459,10 +1514,12 @@ const openEndpoint = (path, method)=>{
 const openSplitTab = (path, method)=>{
  const m = method.toUpperCase();
  const id = tabKey(path, m);
- if(!state.splitView){ state.splitView = true; }
+ syncTab(state.pane);
  let tab = state.tabs.find(t=>t.id===id);
  if(!tab){ tab = makeTab(path, m); state.tabs.push(tab); }
  state.splitTabId = id;
+ state.splitView = true;
+ state.pane = "2";
  loadTab(tab);
  renderTabs();
  renderOperation(path, m, "2");
@@ -1480,11 +1537,11 @@ const closeTab = (id)=>{
   state.selected = null;
  }
  if(wasSplit) state.splitTabId = null;
- saveTab(getActiveTab());
+ syncTab("1");
  renderEndpoints();
  renderTabs();
  const cur = getActiveTab();
- if(cur){ loadTab(cur); renderOperation(cur.path, cur.method, "1"); }
+ if(cur){ state.pane = "1"; loadTab(cur); renderOperation(cur.path, cur.method, "1"); }
  else{
   const c = document.querySelector("#opContent");
   if(c) c.innerHTML = '<div class="empty">Click an endpoint on the left to view and test it.</div>';
@@ -1493,7 +1550,7 @@ const closeTab = (id)=>{
  }
  if(state.splitView){
   const sp = getSplitTab();
-  if(sp){ loadTab(sp); renderOperation(sp.path, sp.method, "2"); }
+  if(sp){ state.pane = "2"; loadTab(sp); renderOperation(sp.path, sp.method, "2"); }
   else{
    const c2 = document.querySelector("#opContent2");
    if(c2){ c2.className="content no-tab"; c2.textContent = "Pick an endpoint for the right pane."; }
@@ -1507,6 +1564,9 @@ const closeTab = (id)=>{
 };
 const updateSplitUI = ()=>{
  const on = !!state.splitView;
+ if(!on){ state.splitTabId = null; const e2=document.querySelector("#executeBar2"); if(e2) e2.style.display="none"; const r2=document.querySelector("#responsePanel2"); if(r2) r2.classList.remove("show"); }
+ const cs = document.querySelector("#closeSplit2"); if(cs) cs.style.display = on ? "inline-flex" : "none";
+ document.querySelectorAll(".btn-split").forEach(b=>{ b.classList.toggle("on", on && b.dataset.path+"\u007c"+String(b.dataset.method).toUpperCase()===state.splitTabId); });
  const eb2 = document.querySelector("#executeBar2");
  const rp2 = document.querySelector("#responsePanel2");
  const c2 = document.querySelector("#opContent2");
@@ -1514,8 +1574,6 @@ const updateSplitUI = ()=>{
  if(eb2) eb2.style.display = (on && spTab) ? "flex" : "none";
  if(rp2 && !spTab) rp2.classList.remove("show");
  if(c2 && !spTab){ c2.className = "content no-tab"; c2.textContent = "Pick an endpoint for the right pane."; }
- const btn = document.querySelector("#splitBtn");
- if(btn) btn.classList.toggle("on", on);
  const p2 = document.querySelector("#pane2");
  if(p2) p2.classList.toggle("hidden", !on);
  const h1 = document.querySelector("#splitHint1");
@@ -1527,9 +1585,10 @@ const updateSplitUI = ()=>{
 };
 $("#executeBtn").onclick = ()=>executeRequest("1");
 $("#executeBtn2").onclick = ()=>executeRequest("2");
-document.addEventListener("focusin", (e)=>{ if(e.target && e.target.closest && e.target.closest("#pane2")) state.__focus2 = true; else if(e.target && e.target.closest && e.target.closest("#pane1")) state.__focus2 = false; });
+document.addEventListener("focusin", (e)=>{ if(!e.target || !e.target.closest) return; if(e.target.closest("#pane2")){ state.__focus2 = true; activatePane("2"); } else if(e.target.closest("#pane1")){ state.__focus2 = false; activatePane("1"); } });
 $("#shotBtn").onclick = ()=>captureScreenshot("1");
-$("#splitBtn").onclick = ()=>{ state.splitView=!state.splitView; if(state.splitView){ const a=getActiveTab(); if(a && !state.splitTabId){ state.splitTabId=a.id; loadTab(a); renderOperation(a.path,a.method,"2"); } } updateSplitUI(); renderTabs(); };
+$("#shotBtn2").onclick = ()=>captureScreenshot("2");
+$("#closeSplit2").onclick = ()=>{ state.splitView=false; state.splitTabId=null; state.pane="1"; const a=getActiveTab(); if(a) loadTab(a); updateSplitUI(); renderTabs(); };
 $("#fetchBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; try{localStorage.setItem("hamdhi_openapi_url", url);}catch{} await fetchSpec(url); } else { await fetchSpec(""); } };
 $("#refreshBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; await fetchSpec(url); } else { await fetchSpec(""); } };
 $("#specFile").onchange = (e)=>{
@@ -1546,13 +1605,14 @@ document.addEventListener('click', e=>{
  const pill = e.target.closest('label.pill[data-param]');
  if(!pill) return;
  const key = pill.dataset.param;
+ const pillPane = (pill.closest("#pane2")) ? "2" : "1";
  const val = pill.dataset.val;
  if(pill.parentElement){ pill.parentElement.querySelectorAll('label.pill').forEach(p=>{ if(p.dataset.param===key) p.classList.remove('active'); }); }
  pill.classList.add('active');
- state.params[key] = val;
+ setParam(key, val, pillPane);
  const input = pill.querySelector('input');
  if(input) input.checked = true;
- refreshUrlPreview();
+ refreshUrlPreview(pillPane);
 });
 const THEMES = ["dark","light","theme-orange","theme-red","theme-blue","theme-purple","theme-green","theme-pink","theme-matte-dark","theme-matte-light","theme-matte-gray","theme-matte-sepia","theme-matte-monokai","theme-matte-solarized"];
 const THEME_LABELS = {"dark":"Dark","light":"Light","theme-orange":"Orange","theme-red":"Red","theme-blue":"Blue","theme-purple":"Purple","theme-green":"Green","theme-pink":"Pink","theme-matte-dark":"Matte Dark","theme-matte-light":"Matte Light","theme-matte-gray":"Matte Gray","theme-matte-sepia":"Matte Sepia","theme-matte-monokai":"Matte Monokai","theme-matte-solarized":"Matte Solarized"};
