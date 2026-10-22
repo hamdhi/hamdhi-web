@@ -22,6 +22,29 @@ body.theme-matte-gray{--bg:#2b2b2b;--panel:#3a3a3a;--surface:#404040;--border:#4
 body.theme-matte-sepia{--bg:#2a2119;--panel:#352a21;--surface:#3d3026;--border:#4c3d32;--text:#e8ddd3;--muted:#b8a494;--accent:#c9a66b;--get:#c9a66b;--post:#8dae8d;--put:#c98c6b;--del:#c97a7a;--patch:#b08ad8;--input:#352a21}
 body.theme-matte-monokai{--bg:#1e1e1e;--panel:#272822;--surface:#2a2a2a;--border:#383830;--text:#f8f8f2;--muted:#75715e;--accent:#66d9ef;--get:#66d9ef;--post:#a6e22e;--put:#fd971f;--del:#f92672;--patch:#ae81ff;--input:#272822}
 body.theme-matte-solarized{--bg:#002b36;--panel:#073642;--surface:#0a4358;--border:#1e4e64;--text:#839496;--muted:#586e75;--accent:#268bd2;--get:#268bd2;--post:#2aa198;--put:#b58900;--del:#dc322f;--patch:#6c71c4;--input:#073642}
+/* ---------- Tabs + split view (Postman style) ---------- */
+.workarea{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--panel)}
+.tabs{display:flex;align-items:flex-end;gap:4px;overflow-x:auto;padding:6px 8px 0;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;min-height:36px}
+.tabs::-webkit-scrollbar{height:6px}
+.tabs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.tab{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;font-size:12px;max-width:280px}
+.tab:hover{background:var(--border)}
+.tab.active{background:var(--panel);border-color:var(--accent);border-bottom:2px solid var(--accent);font-weight:600}
+.tab .method{font-size:10px;font-weight:800;padding:2px 6px;border-radius:3px;flex-shrink:0}
+.tab .path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab .tab-close{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:14px;line-height:1;opacity:.5;border:1px solid var(--border);background:var(--panel);flex-shrink:0;padding:0}
+.tab .tab-close:hover{opacity:1;color:var(--danger);border-color:var(--danger)}
+.tab.tab2{border-color:var(--accent)}
+.tabs .empty-tab{border:none;background:transparent;color:var(--muted);cursor:default;font-size:11.5px;padding:9px 4px}
+.tabs .empty-tab:hover{background:transparent}
+.header .split-btn{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:6px;font-size:12px;margin-left:8px}
+.header .split-btn.on{background:var(--accent);color:#001623;border-color:var(--accent);font-weight:700}
+.panes{display:flex;flex:1;min-height:0;overflow:hidden}
+.pane{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pane.hidden{display:none!important}
+.pane header{padding:9px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-shrink:0}
+.pane header h3{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.split-hint{font-size:11px;color:var(--muted);white-space:nowrap}
 a{color:var(--accent);text-decoration:none}
 button{font:inherit;cursor:pointer;border:none;background:transparent;color:inherit}
 input,select,textarea{font:inherit;background:var(--input);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px}
@@ -192,6 +215,7 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
     <option value="theme-matte-monokai">Matte Monokai</option>
     <option value="theme-matte-solarized">Matte Solarized</option>
   </select>
+  <button class="btn split-btn" id="splitBtn" title="Split view - show 2 tabs side by side">Split View</button>
  </div>
 </div>
 <div class="auth-modal hidden" id="authModal">
@@ -219,26 +243,50 @@ label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}
   <div class="tags" id="tagFilters"></div>
   <div class="endpoints" id="endpointsList"></div>
  </div>
- <div class="panel">
-  <header>
-   <h3 id="opTitle">Select an endpoint</h3>
-  </header>
-  <div class="content" id="opContent">
-   <div class="empty">Click an endpoint on the left to view and test it.</div>
-  </div>
-  <div class="execute-bar">
-   <button class="btn primary" id="executeBtn" disabled>Execute (Ctrl+E)</button>
-   <button class="btn" id="shotBtn" title="Save evidence screenshot (PNG)">📸 Screenshot</button>
-   <span class="help">↑/↓ browse • Enter open • / search • Esc back</span>
-  </div>
-  <div class="response" id="responsePanel">
-   <h5>Response</h5>
-   <div class="res-status" id="resStatus"></div>
-   <div class="copy" id="copyCurl" title="Copy cURL">Copy cURL</div>
-   <div class="res-body" id="resBody"></div>
+ <div class="workarea">
+  <div class="tabs" id="tabBar"></div>
+  <div class="panes" id="panes">
+   <div class="pane" id="pane1">
+    <header>
+     <h3 id="opTitle">Select an endpoint</h3>
+     <div class="split-hint" id="splitHint1"></div>
+    </header>
+    <div class="content" id="opContent">
+     <div class="empty">Click an endpoint on the left to view and test it.</div>
+    </div>
+    <div class="execute-bar">
+     <button class="btn primary" id="executeBtn" disabled>Execute (Ctrl+E)</button>
+     <button class="btn" id="shotBtn" title="Save evidence screenshot (PNG)">Screenshot</button>
+     <span class="help" id="helpText">&#8593;/&#8595; browse &#8226; Enter open &#8226; / search &#8226; Esc back</span>
+    </div>
+    <div class="response" id="responsePanel">
+     <h5>Response</h5>
+     <div class="res-status" id="resStatus"></div>
+     <div class="copy" id="copyCurl" title="Copy cURL">Copy cURL</div>
+     <div class="res-body" id="resBody"></div>
+    </div>
+   </div>
+   <div class="pane hidden" id="pane2">
+    <header>
+     <h3 id="opTitle2">Split view</h3>
+     <div class="split-hint" id="splitHint2">Right pane</div>
+    </header>
+    <div class="content no-tab" id="opContent2">Pick an endpoint for the right pane.</div>
+    <div class="execute-bar" id="executeBar2" style="display:none">
+     <button class="btn primary" id="executeBtn2" disabled>Execute</button>
+     <span class="help">Right pane</span>
+    </div>
+    <div class="response" id="responsePanel2" style="display:none">
+     <h5>Response</h5>
+     <div class="res-status" id="resStatus2"></div>
+     <div class="res-body" id="resBody2"></div>
+    </div>
+   </div>
   </div>
  </div>
+
 </div>
+<script src="js/yaml-subset.js"></script>
 <script>
 const HAMDHI_OPENAPI_URL = "__HAMDHI_OPENAPI_URL__";
 const HAMDHI_INJECTED = (HAMDHI_OPENAPI_URL && HAMDHI_OPENAPI_URL!=="__HAMDHI_OPENAPI_URL__") ? HAMDHI_OPENAPI_URL.trim() : "";
@@ -248,9 +296,37 @@ const HAMDHI_INJECTED = (HAMDHI_OPENAPI_URL && HAMDHI_OPENAPI_URL!=="__HAMDHI_OP
 // Hamdhi WEB (standalone) — this build always talks to the target API through
 // the same-origin /api/proxy endpoint, so the browser never hits CORS.
 // The spec itself is fetched through /api/spec?url=...
-const HAMDHI_VERSION = "2.0.0-web";
-const HAMDHI_PROXY = "/api/proxy";
-const HAMDHI_SPEC_API = "/api/spec";
+const HAMDHI_VERSION = "2.0.1-web";
+// Server-side endpoints, in preference order:
+//   "/api/spec"    -> Node / Vercel serverless function (web/api/spec.js)
+//   "/api/spec.php" -> PHP host (InfinityFree, shared hosting, cPanel)
+// The first one that answers is used; if none answers the app falls back to
+// "direct mode" (the browser fetches the spec itself, CORS permitting).
+const HAMDHI_SPEC_APIS = ["/api/spec", "/api/spec.php"];
+const HAMDHI_PROXY_APIS = ["/api/proxy", "/api/proxy.php"];
+let HAMDHI_SPEC_API = "";
+let HAMDHI_PROXY = "";
+let HAMDHI_DIRECT = true;   // true = no server-side backend found
+
+// Probe a candidate server-side endpoint. An endpoint "exists" when it
+// answers with JSON (even an error) instead of an HTML 404 page.
+const probeBackend = async (path)=>{
+ try{
+  const r = await fetch(path + "?url=__hamdhi_probe__", { headers: { 'Accept': 'application/json' } });
+  const ct = (r.headers.get("content-type")||"").toLowerCase();
+  if(!ct.includes("json")) return false;
+  try { await r.json(); } catch { return false; }
+  return true;
+ }catch{ return false; }
+};
+const detectBackend = async ()=>{
+ for(const p of HAMDHI_SPEC_APIS){ if(await probeBackend(p)){ HAMDHI_SPEC_API = p; break; } }
+ for(const p of HAMDHI_PROXY_APIS){ if(await probeBackend(p)){ HAMDHI_PROXY = p; break; } }
+ HAMDHI_DIRECT = !HAMDHI_SPEC_API;
+ return { spec: HAMDHI_SPEC_API, proxy: HAMDHI_PROXY, direct: HAMDHI_DIRECT };
+};
+// The old constants are kept for backwards compatibility with saved pages.
+const HAMDHI_LEGACY_PROXY = "/api/proxy";
 
 const HAMDHI_DISCOVERY = ["/hamdhi/schema/", "/hamdhi/schema.json", "/hamdhi/openapi.json", "/api/schema/", "/api/schema.json",
  "/api/docs/?format=openapi", "/api/docs?format=openapi", "/schema/",
@@ -290,6 +366,10 @@ const state = {
  baseUrl: "",
  servers: [],
  selectedServer: 0,
+ tabs: [],
+ activeTabId: null,
+ splitView: false,
+ splitTabId: null,
  selected: null,
  tags: [],
  activeTag: "All",
@@ -420,6 +500,8 @@ const processSpec = (spec, sourceLabel="")=>{
   state.search = "";
   renderTags();
   renderEndpoints();
+  state.tabs=[]; state.activeTabId=null; state.splitTabId=null; state.splitView=false;
+  renderTabs(); updateSplitUI();
   const title = (state.resolved.info&&state.resolved.info.title)||"API";
   const pathCount = Object.keys(state.resolved.paths||{}).length;
   $("#specInfo").textContent = `${title} • ${pathCount} paths${sourceLabel?" — "+sourceLabel:""}`;
@@ -451,32 +533,49 @@ const fetchSpec = async (url, opts={})=>{
    $("#endpointsList").innerHTML = "";
    $("#opContent").innerHTML = '<div class="empty">Loading spec…</div>';
   }
-   // Fetch the spec through the server-side spec endpoint. This avoids CORS
-   // entirely and also converts YAML specs into JSON for the UI.
+   // Fetch the spec. Two modes:
+   //  - server mode: through /api/spec or /api/spec.php (no CORS, YAML converted)
+   //  - direct mode: the browser fetches the document itself (needs CORS)
    let resp;
-   const specApiUrl = HAMDHI_SPEC_API + "?url=" + encodeURIComponent(absSpecUrl(url));
-   try { resp = await fetch(specApiUrl, { headers: { 'Accept': 'application/json' } }); }
-   catch(netErr){ throw new Error('Network error: could not reach ' + url + ' - is the server running? (' + (netErr && netErr.message ? netErr.message : 'fetch failed') + ')'); }
-   if(!resp.ok){
-    let detail = "";
-    try {
-     const t = await resp.clone().text();
+   if(HAMDHI_SPEC_API){
+    const specApiUrl = HAMDHI_SPEC_API + "?url=" + encodeURIComponent(absSpecUrl(url));
+    try { resp = await fetch(specApiUrl, { headers: { 'Accept': 'application/json' } }); }
+    catch(netErr){ throw new Error('Network error: could not reach ' + url + ' - is the server running? (' + (netErr && netErr.message ? netErr.message : 'fetch failed') + ')'); }
+    if(!resp.ok){
+     let detail = "";
      try {
-      const j = JSON.parse(t);
-      if(j && (j.error || j.body)) detail = "\n\n" + (j.error||"") + (j.body ? "\n" + String(j.body).slice(0,600) : "");
-     } catch { if(t && t.length < 600) detail = "\n\n" + t; }
-    } catch {}
-    throw new Error(`HTTP ${resp.status} while fetching ${url}${detail}`);
+      const t = await resp.clone().text();
+      try {
+       const j = JSON.parse(t);
+       if(j && (j.error || j.body)) detail = "\n\n" + (j.error||"") + (j.body ? "\n" + String(j.body).slice(0,600) : "");
+      } catch { if(t && t.length < 600) detail = "\n\n" + t; }
+     } catch {}
+     throw new Error(`HTTP ${resp.status} while fetching ${url}${detail}`);
+    }
+    let payload;
+    try { payload = await resp.json(); }
+    catch { throw new Error('Could not parse the spec response from ' + url); }
+    if(payload && payload.error) throw new Error(payload.error);
+    let spec = payload && payload.spec;
+    // The PHP endpoint returns the raw document in "body" when it is YAML.
+    if(!spec && payload && payload.body) spec = parseSpecText(payload.body);
+    // Reject error-JSON / login pages that parse but are not specs.
+    if(!isValidSpec(spec)) throw new Error('Response at ' + url + ' is JSON but not an OpenAPI spec (missing openapi/swagger/paths).');
+    processSpec(spec, (payload && payload.url) || url);
+    try{localStorage.setItem("hamdhi_openapi_url", url);}catch{}
+    return true;
    }
-   let payload;
-   try { payload = await resp.json(); }
-   catch { throw new Error('Could not parse the spec response from ' + url); }
-   if(payload && payload.error) throw new Error(payload.error);
-   const spec = payload && payload.spec;
-   // Reject error-JSON / login pages that parse but are not specs,
-   // so auto-discovery keeps trying instead of showing 0 endpoints.
-   if(!isValidSpec(spec)) throw new Error('Response at ' + url + ' is JSON but not an OpenAPI spec (missing openapi/swagger/paths).');
-   processSpec(spec, payload.url || url);
+   // Direct mode (no server-side backend on this host): the browser fetches
+   // the document itself - the target API must allow CORS.
+   try { resp = await fetch(absSpecUrl(url), { headers: { 'Accept': 'application/json, application/yaml, text/yaml, text/plain, */*' } }); }
+   catch(netErr){ throw new Error('Could not fetch ' + url + ' directly from the browser. This host has no server-side backend (/api/spec) and the API does not allow cross-origin requests (CORS). Options: host web/ on a Node/PHP host with the server endpoints, or enable CORS on the API.'); }
+   if(!resp.ok){
+    throw new Error(`HTTP ${resp.status} while fetching ${url} (direct mode — the browser fetched the document itself because no server-side /api/spec backend was found on this host).`);
+   }
+   const text = await resp.text();
+   const spec = parseSpecText(text);
+   if(!isValidSpec(spec)) throw new Error('Response at ' + url + ' is not an OpenAPI document (missing openapi/swagger/paths).');
+   processSpec(spec, url);
    try{localStorage.setItem("hamdhi_openapi_url", url);}catch{}
    return true;
  }catch(err){
@@ -492,9 +591,20 @@ const fetchSpec = async (url, opts={})=>{
 const loadSpecFromText = (text, fileName)=>{
  try{
   let spec;
+  // JSON first, then YAML (the browser parser in js/yaml-subset.js).
   try { spec = JSON.parse(text); }
-  catch { throw new Error('Uploaded file is not valid JSON.'); }
-  if(!spec.openapi&&!spec.swagger) throw new Error('File does not appear to be an OpenAPI spec (missing openapi/swagger field).');
+  catch {
+   const yaml = window.HamdhiYaml;
+   if(yaml && yaml.parseSubset){
+    spec = yaml.parseSubset(text);
+    if(spec && typeof spec === "object") { /* ok */ }
+    else throw new Error("Uploaded file is not valid JSON or YAML.");
+   } else {
+    throw new Error("Uploaded file is not valid JSON.");
+   }
+  }
+  if(!spec || typeof spec!=="object") throw new Error("Uploaded file is not valid JSON or YAML.");
+  if(!spec.openapi&&!spec.swagger) throw new Error("File does not appear to be an OpenAPI spec (missing openapi/swagger field).");
   processSpec(spec, fileName||"Uploaded file");
   $("#fileStatus").textContent = `Loaded: ${fileName}`;
   $("#fileStatus").style.color = "var(--ok)";
@@ -505,6 +615,26 @@ const loadSpecFromText = (text, fileName)=>{
   $("#fileStatus").style.color = "var(--danger)";
   console.error(err);
  }
+};
+// Parse a raw spec document (JSON or YAML) into a JS object. Used by the
+// direct-mode spec fetcher, which has no server-side YAML conversion.
+const parseSpecText = (text)=>{
+ if(text==null) return null;
+ text = String(text);
+ // JSON first.
+ try {
+  const j = JSON.parse(text);
+  if(j && typeof j==="object") return j;
+ } catch {}
+ // Then YAML (the browser parser in js/yaml-subset.js).
+ const yaml = window.HamdhiYaml;
+ if(yaml && typeof yaml.parseSubset==="function"){
+  try {
+   const j = yaml.parseSubset(text);
+   if(j && typeof j==="object") return j;
+  } catch {}
+ }
+ return null;
 };
 const renderTags = ()=>{
  const wrap = $("#tagFilters");
@@ -560,7 +690,7 @@ const renderEndpoints = ()=>{
    el.className = "endpoint "+methodCls(method)+(op.deprecated?" deprecated":"")+(state.selected&&state.selected.path===path&&state.selected.method===method.toUpperCase()?" selected":"");
    const showExec = !["POST","PUT","PATCH","DELETE"].includes(method);
    el.innerHTML = `<span class="method ${methodCls(method)}">${method}</span><span class="path">${escHtml(path)}</span><span class="summary">${escHtml(op.summary||"")}</span>${showExec?`<button class="btn-exec" title="Execute">▶</button>`:""}`;
-   el.onclick = (e)=>{ if(e.target.classList.contains("btn-exec")){ e.stopPropagation(); state.selected={path, method}; renderEndpoints(); renderOperation(path, method); executeRequest(); } else { state.selected={path, method}; renderEndpoints(); renderOperation(path, method); } };
+   el.onclick = (e)=>{ if(e.target.classList.contains("btn-exec")){ e.stopPropagation(); openEndpoint(path, method); executeRequest(); } else if(e.ctrlKey||e.metaKey||e.shiftKey){ e.preventDefault(); openSplitTab(path, method); } else { openEndpoint(path, method); } };
    group.appendChild(el);
    total++;
   });
@@ -612,18 +742,18 @@ const createParamUI = (p, path)=>{
  }
  return div;
 };
-const renderOperation = (path, method)=>{
+const renderOperation = (path, method, pane)=>{
+ pane = pane || "1";
+ const suf = (pane==="2" ? "2" : "");
+ const P$ = (id)=>document.querySelector(id+suf);
  const opObj = state.resolved.paths[path];
  const op = opObj[method.toLowerCase()];
  if(!op) return;
- const content = $("#opContent");
+ const content = P$("#opContent");
  content.innerHTML = "";
- state.params = {};
- state.customUrl = undefined;
- state.urlTouched = false;
- state.lastResponse = null;
- state.body = "";
- const opTitleEl = $("#opTitle");
+ const curTab = (pane==="2") ? getSplitTab() : getActiveTab();
+ if(curTab) loadTab(curTab);
+ const opTitleEl = P$("#opTitle");
  if(opTitleEl) opTitleEl.textContent = method + " " + path;
  const title = document.createElement("div");
  title.style.display="flex"; title.style.justifyContent="space-between"; title.style.alignItems="center"; title.style.marginBottom="10px";
@@ -689,7 +819,8 @@ const renderOperation = (path, method)=>{
    const exVal = schema?schemaExample(schema):"";
    const initVal = exFromMedia!==undefined?JSON.stringify(exFromMedia,null,2):(exVal!==undefined?JSON.stringify(exVal,null,2):"");
    const ta = document.createElement("textarea");
-   ta.className="textarea"; ta.id="bodyText"; ta.value = initVal;
+   ta.className="textarea"; ta.id="bodyText"+suf; ta.value = state.body||initVal;
+   ta.oninput = (e)=>{ state.body = e.target.value; };
    ta.placeholder = '{"key": "value"}';
    sec.appendChild(ta);
    const ctLabel = document.createElement("div"); ctLabel.style.fontSize="10px"; ctLabel.style.color="var(--muted)"; ctLabel.style.marginTop="6px"; ctLabel.textContent = "Content-Type: "+jsonCt;
@@ -731,7 +862,7 @@ const renderOperation = (path, method)=>{
  authSec.appendChild(authHead);
  const authRow = document.createElement("div"); authRow.style.padding="8px 12px";
  const jwtInput = document.createElement("input");
- jwtInput.type = "text"; jwtInput.id = "jwtInput"; jwtInput.className = "url-input";
+ jwtInput.type = "text"; jwtInput.id = "jwtInput"+suf; jwtInput.className = "url-input";
  jwtInput.placeholder = "Paste JWT token — 'Bearer' keyword added automatically";
  jwtInput.value = state.auth.bearer||"";
  authRow.appendChild(jwtInput);
@@ -757,11 +888,11 @@ const renderOperation = (path, method)=>{
  const urlHead = document.createElement("div"); urlHead.className="url-header";
  const urlLabel = document.createElement("label"); urlLabel.textContent = "Request URL";
  const urlCopy = document.createElement("div"); urlCopy.className="curl-copy"; urlCopy.textContent = "Copy";
- urlCopy.onclick = ()=>{ navigator.clipboard.writeText($("#genUrl").value); urlCopy.textContent="Copied!"; setTimeout(()=>urlCopy.textContent="Copy",1200); };
+ urlCopy.onclick = ()=>{ navigator.clipboard.writeText(P$("#genUrl").value); urlCopy.textContent="Copied!"; setTimeout(()=>urlCopy.textContent="Copy",1200); };
  urlHead.appendChild(urlLabel); urlHead.appendChild(urlCopy);
  urlSec.appendChild(urlHead);
- const genUrl = document.createElement("input"); genUrl.id="genUrl"; genUrl.className="url-input";
- genUrl.value = buildUrl(path, method);
+ const genUrl = document.createElement("input"); genUrl.id="genUrl"+suf; genUrl.className="url-input";
+ genUrl.value = state.customUrl || buildUrl(path, method);
  genUrl.oninput = (e)=>{ state.customUrl = e.target.value; state.urlTouched = true; };
  urlSec.appendChild(genUrl);
  content.appendChild(urlSec);
@@ -769,10 +900,10 @@ const renderOperation = (path, method)=>{
  const curlSec = document.createElement("section"); curlSec.className="section curl-box";
  const curlHead = document.createElement("div"); curlHead.className="curl-header";
  const curlLabel = document.createElement("label"); curlLabel.textContent = "cURL Command";
- const curlCopyBtn = document.createElement("div"); curlCopyBtn.className="curl-copy"; curlCopyBtn.id="curlCopyBtn"; curlCopyBtn.textContent = "Copy cURL";
+ const curlCopyBtn = document.createElement("div"); curlCopyBtn.className="curl-copy"; curlCopyBtn.id="curlCopyBtn"+suf; curlCopyBtn.textContent = "Copy cURL";
  curlHead.appendChild(curlLabel); curlHead.appendChild(curlCopyBtn);
  curlSec.appendChild(curlHead);
- const curlPre = document.createElement("pre"); curlPre.id="curlPreview"; curlPre.textContent = buildCurl(buildUrl(path, method), method, authHeaders(), state.body||"");
+ const curlPre = document.createElement("pre"); curlPre.id="curlPreview"+suf; curlPre.textContent = buildCurl(buildUrl(path, method), method, authHeaders(), state.body||"");
  curlSec.appendChild(curlPre);
  content.appendChild(curlSec);
  // Update cURL when URL changes
@@ -822,10 +953,11 @@ const renderOperation = (path, method)=>{
  `;
  lc.appendChild(lcContent);
  content.appendChild(lc);
- const executeBtn = $("#executeBtn"); executeBtn.disabled = false;
- $("#responsePanel").classList.remove("show");
- $("#resBody").textContent = "";
- $("#resStatus").textContent = "";
+ const executeBtn = P$("#executeBtn"); if(executeBtn) executeBtn.disabled = false;
+ const respPanel = P$("#responsePanel");
+ const resBody = P$("#resBody");
+ const resStatus = P$("#resStatus");
+ if(state.lastResponse){ resStatus.textContent=state.lastResponse.status+" "+state.lastResponse.statusText; resStatus.className="res-status "+(state.lastResponse.ok?"res-ok":"res-err"); resBody.innerHTML=highlightJson(state.lastResponse.body||""); respPanel.classList.add("show"); }else{ respPanel.classList.remove("show"); resBody.textContent=""; resStatus.textContent=""; }
 };
 // Substitute {paramName} placeholders in a URL with the values the user entered
 // for path parameters. Returns the URL unchanged when there is nothing to do.
@@ -871,8 +1003,8 @@ const refreshUrlPreview = ()=>{
  if(!state.selected) return;
  if(state.urlTouched){ refreshCurlIfOpen(); return; }
  const {path, method} = state.selected;
- const genUrl = $("#genUrl");
- if(genUrl) genUrl.value = buildUrl(path, method);
+ const genUrl = document.querySelector("#genUrl");
+ if(genUrl) genUrl.value = state.customUrl || buildUrl(path, method);
  refreshCurlIfOpen();
 };
 const buildCurl = (url, method, headers, body)=>{
@@ -899,9 +1031,12 @@ const updateAuthBtn = ()=>{
  if((state.auth.bearer||"").trim()){ btn.textContent = "✓ Authorized"; btn.classList.add("authed"); }
  else { btn.textContent = "🔒 Authorize"; btn.classList.remove("authed"); }
 };
-const refreshCurlIfOpen = ()=>{
- const pre = $("#curlPreview"); if(!pre||!state.selected) return;
- const url = state.customUrl || ($("#genUrl")? $("#genUrl").value : buildUrl(state.selected.path, state.selected.method));
+const refreshCurlIfOpen = (pane)=>{
+ pane = pane || "1";
+ const suf = (pane==="2" ? "2" : "");
+ const pre = document.querySelector("#curlPreview"+suf); if(!pre||!state.selected) return;
+ const gu = document.querySelector("#genUrl"+suf);
+ const url = state.customUrl || (gu? gu.value : buildUrl(state.selected.path, state.selected.method));
  pre.textContent = buildCurl(url, state.selected.method, authHeaders(), state.body||"");
 };
 const syncAuthUi = ()=>{
@@ -927,6 +1062,14 @@ const proxyFetch = async (url, method, headers, body)=>{
  if(!/^https?:\/\//i.test(absUrl)){
   try { absUrl = new URL(absUrl, (state.specOrigin||"") + location.origin).href; } catch { absUrl = absUrl; }
  }
+ // Direct mode: no server-side proxy on this host — the browser calls the
+ // API itself. The API must send CORS headers for this to work.
+ if(HAMDHI_DIRECT || !HAMDHI_PROXY){
+  let resp;
+  try { resp = await fetch(absUrl, { method: method, headers: headers||{}, body: (method==="GET"||method==="HEAD") ? undefined : (body==null?undefined:body) }); }
+  catch(err){ throw new Error("Could not call " + absUrl + " from the browser. This host has no server-side proxy (/api/proxy) and the API does not allow cross-origin requests (CORS). Use a host that runs the server endpoints (Node/Vercel/PHP) or enable CORS on the API. (" + (err&&err.message?err.message:"network error") + ")"); }
+  return resp;
+ }
  const payload = { method, url: absUrl, headers: headers||{}, body: (method==="GET"||method==="HEAD") ? null : (body==null? "" : body) };
  let resp;
  try { resp = await fetch(HAMDHI_PROXY, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) }); }
@@ -948,9 +1091,14 @@ const proxyFetch = async (url, method, headers, body)=>{
   json: async ()=> JSON.parse(rawBody),
  };
 };
-const executeRequest = async ()=>{
- if(!state.selected) return;
- const {path, method} = state.selected;
+const executeRequest = async (pane)=>{
+ pane = pane || "1";
+ const suf = (pane==="2" ? "2" : "");
+ const P$ = (id)=>document.querySelector(id+suf);
+ const tab = (pane==="2") ? getSplitTab() : getActiveTab();
+ const sel = tab ? {path:tab.path, method:tab.method} : state.selected;
+ if(!sel) return;
+ const {path, method} = sel;
  // Safety net: a hand-edited URL may still contain {placeholders}.
  const url = applyPathParams(state.customUrl || buildUrl(path, method), path, method);
  const opObj = state.resolved.paths[path];
@@ -968,17 +1116,20 @@ const executeRequest = async ()=>{
  if((state.auth.bearer||"").trim()) headers["Authorization"]="Bearer "+state.auth.bearer.trim();
  let body = null;
  if(op.requestBody){
-  const ta = $("#bodyText");
+  const ta = P$("#bodyText");
   body = ta?ta.value:"";
   const ct = op.requestBody.content||{};
   const jsonCt = Object.keys(ct).find(k=>k.includes("json"))||Object.keys(ct)[0];
   if(jsonCt) headers["Content-Type"]=jsonCt;
  }
- $("#executeBtn").disabled = true;
- $("#executeBtn").textContent = "Executing…";
- $("#responsePanel").classList.remove("show");
- $("#resBody").textContent = "";
- $("#resStatus").textContent = "";
+ const execBtn = P$("#executeBtn");
+ if(execBtn){ execBtn.disabled = true; execBtn.textContent = "Executing…"; }
+ const rp = P$("#responsePanel");
+ const rb = P$("#resBody");
+ const rs = P$("#resStatus");
+ rp.classList.remove("show");
+ rb.textContent = "";
+ rs.textContent = "";
  const start = performance.now();
  try{
   const resp = await proxyFetch(url, method, headers, body);
@@ -1005,16 +1156,18 @@ const executeRequest = async ()=>{
    hints = errorHints(errInfo, resp.status);
    bodyText = errInfo.type+": "+errInfo.message+(hints.length?"\n\nHow to fix:\n"+hints.map(x=>"- "+x).join("\n"):"");
   }
-  const statusEl = $("#resStatus");
+  const statusEl = rs;
   statusEl.textContent = resp.status+" "+resp.statusText;
   statusEl.className = "res-status "+(resp.status>=200&&resp.status<300?"res-ok":"res-err");
-  $("#resBody").innerHTML = errInfo ? renderErrorPanel(errInfo, hints) : highlightJson(bodyText);
-  $("#responsePanel").classList.add("show");
+  rb.innerHTML = errInfo ? renderErrorPanel(errInfo, hints) : highlightJson(bodyText);
+  rp.classList.add("show");
   const resHeaders = {};
   resp.headers.forEach((v,k)=>{ resHeaders[k]=v; });
   state.lastResponse = {status: resp.status, statusText: resp.statusText, ok: resp.status>=200&&resp.status<300, body: bodyText, ms: Math.round(performance.now()-start), url, method, headers: resHeaders};
   const curl = buildCurl(url, method, headers, body);
-  $("#copyCurl").onclick = ()=>{ navigator.clipboard.writeText(curl); $("#copyCurl").textContent="Copied!"; setTimeout(()=>$("#copyCurl").textContent="Copy cURL",1200); };
+  const cc = P$("#copyCurl");
+  if(cc){ cc.onclick = ()=>{ navigator.clipboard.writeText(curl); cc.textContent="Copied!"; setTimeout(()=>cc.textContent="Copy cURL",1200); }; }
+  if(tab){ tab.lastResponse = state.lastResponse; tab.body = state.body; tab.customUrl = state.customUrl; tab.urlTouched = state.urlTouched; tab.params = state.params; }
   state.history.unshift({time:new Date().toISOString(),method,url,status:resp.status,body:bodyText});
   if(state.history.length>50) state.history.pop();
   localStorage.setItem("hamdhi_history", JSON.stringify(state.history));
@@ -1024,14 +1177,13 @@ const executeRequest = async ()=>{
    "If the API is on another origin, configure CORS on the server to allow this page's origin.",
    "Check your connection, VPN, or proxy for anything blocking the request."
   ];
-  $("#resStatus").textContent = "Network Error";
-  $("#resStatus").className = "res-status res-err";
-  $("#resBody").innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
-  $("#responsePanel").classList.add("show");
+  rs.textContent = "Network Error";
+  rs.className = "res-status res-err";
+  rb.innerHTML = renderErrorPanel({type:"Network Error", message:(err&&err.message)||"Unknown network error", location:"", raised:"", raw:""}, netHints);
+  rp.classList.add("show");
   state.lastResponse = {status:0, statusText:"Network Error", ok:false, body:"Network Error: "+((err&&err.message)||"")+"\n\nHow to fix:\n"+netHints.map(x=>"- "+x).join("\n"), ms:Math.round(performance.now()-start), url, method, headers:{}};
  }finally{
-  $("#executeBtn").disabled = false;
-  $("#executeBtn").textContent = "Execute (Ctrl+E)";
+  if(execBtn){ execBtn.disabled = false; execBtn.textContent = (pane==="2" ? "Execute" : "Execute (Ctrl+E)"); }
  }
 };
 let selectedIndex = -1;
@@ -1046,9 +1198,7 @@ const openSelected = ()=>{
  if(els[selectedIndex]){
   const path = els[selectedIndex].querySelector(".path").textContent;
   const method = els[selectedIndex].querySelector(".method").textContent;
-  state.selected = {path, method:method};
-  renderEndpoints();
-  renderOperation(path, method);
+  openEndpoint(path, method);
  }
 };
 document.addEventListener("keydown", e=>{
@@ -1059,8 +1209,8 @@ document.addEventListener("keydown", e=>{
  else if(e.key==="ArrowDown"){ e.preventDefault(); const els=endpointEls(); selectedIndex=Math.min(els.length-1,selectedIndex+1); highlight(selectedIndex); }
  else if(e.key==="Enter"){ e.preventDefault(); openSelected(); }
  else if(e.key==="/"){ e.preventDefault(); $("#endpointSearch").focus(); }
- else if(e.key==="Escape"){ state.selected=null; $("#opContent").innerHTML='<div class="empty">Click an endpoint on the left to view and test it.</div>'; $("#responsePanel").classList.remove("show"); selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); }
- else if(e.ctrlKey&&e.key==="e"){ e.preventDefault(); executeRequest(); }
+ else if(e.key==="Escape"){ state.selected=null; state.activeTabId=null; state.splitTabId=null; renderTabs(); updateSplitUI(); $("#opContent").innerHTML='<div class="empty">Click an endpoint on the left to view and test it.</div>'; $("#responsePanel").classList.remove("show"); selectedIndex=-1; endpointEls().forEach(el=>el.classList.remove("selected")); }
+ else if(e.ctrlKey&&e.key==="e"){ e.preventDefault(); executeRequest(state.splitView && state.__focus2 ? "2" : "1"); }
 });
 const SHOT = {bg:"#0d1117",panel:"#161b22",border:"#30363d",text:"#e6edf3",muted:"#8b949e",ok:"#3fb950",err:"#f85149",get:"#38bdf8",post:"#22c55e",put:"#f59e0b",patch:"#a855f7",del:"#ef4444"};
 const shotWrap = (text, maxChars)=>{
@@ -1072,12 +1222,16 @@ const shotWrap = (text, maxChars)=>{
  }
  return out;
 };
-const captureScreenshot = ()=>{
- if(!state.selected||!state.resolved) return;
- const btn = $("#shotBtn");
- const {path, method} = state.selected;
+const captureScreenshot = (pane)=>{
+ pane = pane || "1";
+ const suf = (pane==="2" ? "2" : "");
+ const shTab = (pane==="2") ? getSplitTab() : getActiveTab();
+ if(!shTab||!state.resolved) return;
+ const btn = document.querySelector("#shotBtn"+suf);
+ const {path, method} = {path:shTab.path, method:shTab.method};
  const op = (state.resolved.paths[path]||{})[method.toLowerCase()]||{};
- const url = state.customUrl || ($("#genUrl")? $("#genUrl").value : buildUrl(path, method));
+ const gu = document.querySelector("#genUrl"+suf);
+ const url = shTab.customUrl || (gu? gu.value : buildUrl(path, method));
  const jwt = (state.auth.bearer||"").trim();
  const authLine = jwt ? "Bearer "+jwt.substring(0,20)+(jwt.length>20?"…":"")+"  (active)" : "None (unauthenticated)";
  const lr = state.lastResponse;
@@ -1087,7 +1241,8 @@ const captureScreenshot = ()=>{
  const sans = '13px system-ui, "Segoe UI", sans-serif';
  const sansB = 'bold 13px system-ui, "Segoe UI", sans-serif';
  const sansH = 'bold 16px system-ui, "Segoe UI", sans-serif';
- const reqBodyText = ($("#bodyText") ? $("#bodyText").value : "") || state.body || "";
+ const bt = document.querySelector("#bodyText"+suf);
+ const reqBodyText = (bt ? bt.value : "") || shTab.body || "";
  const urlLines = shotWrap(url, 96);
  const reqBodyLines = reqBodyText ? shotWrap(reqBodyText, 96).slice(0,40) : [];
  const respBodyLines = lr ? shotWrap(lr.body||"(empty)", 96).slice(0,45) : ["Not executed yet — press Execute, then screenshot to include the response."];
@@ -1228,8 +1383,153 @@ $("#globalJwt").onkeydown = (e)=>{ if(e.key==="Enter"){ e.preventDefault(); $("#
   if(btn){ btn.textContent="✓ Saved"; setTimeout(()=>btn.textContent="📸 Screenshot",1500); }
  });
 };
-$("#executeBtn").onclick = executeRequest;
-$("#shotBtn").onclick = captureScreenshot;
+// ---------------- Tabs + split view ----------------
+const tabKey = (path, method)=> path+"|"+method.toUpperCase();
+const getActiveTab = ()=> state.tabs.find(t=>t.id===state.activeTabId) || null;
+const getSplitTab = ()=> state.tabs.find(t=>t.id===state.splitTabId) || null;
+const saveTab = (tab)=>{
+ if(!tab) return;
+ tab.params = state.params;
+ tab.customUrl = state.customUrl;
+ tab.urlTouched = state.urlTouched;
+ tab.body = state.body;
+ tab.lastResponse = state.lastResponse;
+ tab.selectedServer = state.selectedServer;
+};
+const loadTab = (tab)=>{
+ if(!tab) return;
+ state.params = tab.params || {};
+ state.customUrl = tab.customUrl;
+ state.urlTouched = !!tab.urlTouched;
+ state.body = tab.body || "";
+ state.lastResponse = tab.lastResponse || null;
+ state.selectedServer = tab.selectedServer || 0;
+};
+const makeTab = (path, method)=> ({
+ id: tabKey(path, method),
+ path: path,
+ method: method.toUpperCase(),
+ params: {},
+ customUrl: undefined,
+ urlTouched: false,
+ body: "",
+ lastResponse: null,
+ selectedServer: state.selectedServer
+});
+const renderTabs = ()=>{
+ const bar = document.querySelector("#tabBar");
+ if(!bar) return;
+ bar.innerHTML = "";
+ if(!state.tabs.length){
+  const hint = document.createElement("div");
+  hint.className = "empty-tab";
+  hint.textContent = "No open tabs - click an endpoint to open one";
+  bar.appendChild(hint);
+  return;
+ }
+ state.tabs.forEach(t=>{
+  const el = document.createElement("div");
+  const isActive = t.id===state.activeTabId;
+  const isSplit = t.id===state.splitTabId;
+  el.className = "tab"+(isActive?" active":"")+(isSplit?" tab2":"");
+  const mc = "m-"+t.method.toLowerCase();
+  el.innerHTML = '<span class="method '+mc+'">'+t.method+'</span><span class="path">'+escHtml(t.path)+'</span><button class="tab-close" title="Close tab">&times;</button>';
+  el.onclick = (e)=>{
+   if(e.target.closest(".tab-close")){ e.preventDefault(); e.stopPropagation(); closeTab(t.id); return; }
+   if(e.ctrlKey||e.metaKey||e.shiftKey){ openSplitTab(t.path, t.method); }
+   else { openEndpoint(t.path, t.method); }
+  };
+  bar.appendChild(el);
+ });
+};
+const openEndpoint = (path, method)=>{
+ const m = method.toUpperCase();
+ const id = tabKey(path, m);
+ saveTab(getActiveTab());
+ let tab = state.tabs.find(t=>t.id===id);
+ if(!tab){ tab = makeTab(path, m); state.tabs.push(tab); }
+ state.activeTabId = id;
+ state.selected = {path:path, method:m};
+ loadTab(tab);
+ renderEndpoints();
+ renderTabs();
+ renderOperation(path, m, "1");
+ updateSplitUI();
+};
+const openSplitTab = (path, method)=>{
+ const m = method.toUpperCase();
+ const id = tabKey(path, m);
+ if(!state.splitView){ state.splitView = true; }
+ let tab = state.tabs.find(t=>t.id===id);
+ if(!tab){ tab = makeTab(path, m); state.tabs.push(tab); }
+ state.splitTabId = id;
+ loadTab(tab);
+ renderTabs();
+ renderOperation(path, m, "2");
+ updateSplitUI();
+ const eb = document.querySelector("#executeBar2"); if(eb) eb.style.display = "flex";
+};
+const closeTab = (id)=>{
+ const idx = state.tabs.findIndex(t=>t.id===id);
+ if(idx<0) return;
+ const wasActive = state.activeTabId===id;
+ const wasSplit = state.splitTabId===id;
+ state.tabs.splice(idx,1);
+ if(wasActive){
+  state.activeTabId = state.tabs.length? state.tabs[Math.max(0,idx-1)].id : null;
+  state.selected = null;
+ }
+ if(wasSplit) state.splitTabId = null;
+ saveTab(getActiveTab());
+ renderEndpoints();
+ renderTabs();
+ const cur = getActiveTab();
+ if(cur){ loadTab(cur); renderOperation(cur.path, cur.method, "1"); }
+ else{
+  const c = document.querySelector("#opContent");
+  if(c) c.innerHTML = '<div class="empty">Click an endpoint on the left to view and test it.</div>';
+  const rp = document.querySelector("#responsePanel");
+  if(rp) rp.classList.remove("show");
+ }
+ if(state.splitView){
+  const sp = getSplitTab();
+  if(sp){ loadTab(sp); renderOperation(sp.path, sp.method, "2"); }
+  else{
+   const c2 = document.querySelector("#opContent2");
+   if(c2){ c2.className="content no-tab"; c2.textContent = "Pick an endpoint for the right pane."; }
+   const eb = document.querySelector("#executeBar2");
+   if(eb) eb.style.display = "none";
+   const rp2 = document.querySelector("#responsePanel2");
+   if(rp2) rp2.classList.remove("show");
+  }
+ }
+ updateSplitUI();
+};
+const updateSplitUI = ()=>{
+ const on = !!state.splitView;
+ const eb2 = document.querySelector("#executeBar2");
+ const rp2 = document.querySelector("#responsePanel2");
+ const c2 = document.querySelector("#opContent2");
+ const spTab = getSplitTab();
+ if(eb2) eb2.style.display = (on && spTab) ? "flex" : "none";
+ if(rp2 && !spTab) rp2.classList.remove("show");
+ if(c2 && !spTab){ c2.className = "content no-tab"; c2.textContent = "Pick an endpoint for the right pane."; }
+ const btn = document.querySelector("#splitBtn");
+ if(btn) btn.classList.toggle("on", on);
+ const p2 = document.querySelector("#pane2");
+ if(p2) p2.classList.toggle("hidden", !on);
+ const h1 = document.querySelector("#splitHint1");
+ const h2 = document.querySelector("#splitHint2");
+ const a = getActiveTab();
+ const sp = getSplitTab();
+ if(h1) h1.textContent = on? (a? "Left: "+a.method+" "+a.path : "Left pane") : "";
+ if(h2) h2.textContent = on? (sp? "Right: "+sp.method+" "+sp.path : "Right pane") : "";
+};
+$("#executeBtn").onclick = ()=>executeRequest("1");
+$("#executeBtn2").onclick = ()=>executeRequest("2");
+document.addEventListener("focusin", (e)=>{ if(e.target && e.target.closest && e.target.closest("#pane2")) state.__focus2 = true; else if(e.target && e.target.closest && e.target.closest("#pane1")) state.__focus2 = false; });
+$("#shotBtn").onclick = ()=>captureScreenshot("1");
+$("#splitBtn").onclick = ()=>{ state.splitView=!state.splitView; if(state.splitView){ const a=getActiveTab(); if(a && !state.splitTabId){ state.splitTabId=a.id; loadTab(a); renderOperation(a.path,a.method,"2"); } } updateSplitUI(); renderTabs(); };
 $("#fetchBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; try{localStorage.setItem("hamdhi_openapi_url", url);}catch{} await fetchSpec(url); } else { await fetchSpec(""); } };
 $("#refreshBtn").onclick = async ()=>{ const raw = $("#openapiUrl").value.trim()||HAMDHI_INJECTED||tryStoredSpecUrl()||""; const url = normSpecUrl(raw); if(url){ $("#openapiUrl").value = url; await fetchSpec(url); } else { await fetchSpec(""); } };
 $("#specFile").onchange = (e)=>{
@@ -1269,23 +1569,37 @@ $("#endpointSearch").oninput = (e)=>{ state.search = e.target.value; renderEndpo
 // No blind auto-discovery here: on the web there is no "same origin API" to
 // guess, so we show a friendly landing screen instead.
 document.addEventListener("DOMContentLoaded", async ()=>{
+ renderTabs();
+ updateSplitUI();
  const savedTheme = localStorage.getItem("hamdhi_theme");
  if(savedTheme&&THEMES.includes(savedTheme)){ setTheme(savedTheme); }
  updateAuthBtn();
  const input = $("#openapiUrl");
  if(input.value.trim()==="__HAMDHI_OPENAPI_URL__") input.value = "";
+ // Find out whether this host offers the server-side endpoints
+ // (/api/spec + /api/proxy, Node or PHP). Without them the app runs in
+ // direct mode: the browser talks to the API itself (needs CORS).
+ const backend = await detectBackend();
  const saved = normSpecUrl(tryStoredSpecUrl());
- if(saved) input.value = saved;
+ // Never auto-load a saved URL from another setup (the Django build's
+ // /hamdhi/schema/ on localhost:8000, etc.) - it always 404s on the web
+ // host and only produces a confusing error. The user pastes the real
+ // OpenAPI URL instead.
+ const usableSaved = (saved && /^https?:\/\//i.test(saved)
+  && !/^(localhost|127\.0\.0\.1)/i.test(saved)
+  && !/^\/hamdhi\//i.test(saved)) ? saved : "";
+ if(usableSaved) input.value = usableSaved;
  const showLanding = (msg)=>{
   $("#specInfo").textContent = "No spec loaded";
   $("#opContent").innerHTML = `<div class="empty" style="flex-direction:column;gap:10px">
    <div style="font-size:20px;font-weight:700">Paste your OpenAPI URL to get started</div>
    <div style="max-width:520px;text-align:center;line-height:1.6">${msg||"Point Hamdhi at any OpenAPI 3 JSON or YAML document and every endpoint becomes instantly testable. Requests go through a server-side proxy, so APIs without CORS still work."}</div>
    <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-    <input type="text" inputmode="url" autocomplete="off" spellcheck="false" id="landingUrl" placeholder="https://api.example.com/openapi.json" style="min-width:320px" value="${escHtml(saved||"")}">
+    <input type="text" inputmode="url" autocomplete="off" spellcheck="false" id="landingUrl" placeholder="https://api.example.com/openapi.json" style="min-width:320px" value="${escHtml(usableSaved||"")}">
     <button class="btn primary" id="landingLoad">Load</button>
    </div>
    <div style="font-size:11px;color:var(--muted);margin-top:4px">Supports OpenAPI 3.x / Swagger 2.0 — JSON or YAML.</div>
+    ${backend.direct ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">No server-side backend found on this host - running in <b>direct mode</b>: requests are sent from your browser, so the API must allow CORS.</div>' : '' }
   </div>`;
   const lu = $("#landingUrl"); const ll = $("#landingLoad");
   if(!lu||!ll) return;
@@ -1303,8 +1617,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
  // A ?url=... query parameter loads straight away (great for sharing links).
  const qUrl = new URLSearchParams(location.search).get("url");
  if(qUrl){ input.value = qUrl; await fetchSpec(qUrl); return; }
- if(saved){
-  const ok = await fetchSpec(saved);
+ // Restore a saved URL only when it belongs to this same deployment.
+ // A saved URL from another setup (e.g. the Django build's /hamdhi/schema/
+ // on localhost:8000) always 404s here, so it is ignored and the
+ // friendly landing screen is shown instead.
+ if(usableSaved){
+  const ok = await fetchSpec(usableSaved);
   if(ok) return;
  }
  showLanding();
